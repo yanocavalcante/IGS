@@ -1,3 +1,4 @@
+from canvas import Canvas
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -31,13 +32,19 @@ class SGIInterface(QMainWindow):
         self.main_layout = QHBoxLayout()
         self.central_widget.setLayout(self.main_layout)
         self.create_menu()
-        self.create_viewport()
+        self.create_canvas()
 
-    def create_viewport(self):
-        self.viewport = QWidget()
-        self.viewport_layout = QVBoxLayout()
-        self.viewport.setLayout(self.viewport_layout)
-        self.main_layout.addWidget(self.viewport, 4)
+    def create_canvas(self):
+        self.canvas = Canvas()
+        self.canvas_layout = QVBoxLayout()
+        self.canvas.setLayout(self.canvas_layout)
+        self.main_layout.addWidget(self.canvas, 4)
+
+    # def create_viewport(self):
+    #     self.viewport = QWidget()
+    #     self.viewport_layout = QVBoxLayout()
+    #     self.viewport.setLayout(self.viewport_layout)
+    #     self.main_layout.addWidget(self.viewport, 4)
 
     def create_menu(self):
         self.menu = QWidget()
