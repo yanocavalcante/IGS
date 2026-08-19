@@ -3,14 +3,22 @@ from PyQt6.QtGui import QPainter, QColor, QPen
 
 
 class Canvas(QWidget):
-    def __init__(self):
+    def __init__(self, display_file):
         super().__init__()
+        self.__display_file = display_file
 
     def paintEvent(self, event):
+        '''
+        This method is called by Qt itself everytime the Widget
+        needs to be drawn or redrawn, for instance, the first
+        time it is instantiated or when widget.update() is called
+        '''
         painter = QPainter(self)
 
         painter.fillRect(self.rect(), QColor(200, 200, 200))
         self.hi(painter) # This is a test
+        for obj in self.__display_file:
+            self.draw_object(painter, obj)
 
     def hi(self, painter):
         # Completely Random Valuess
@@ -35,6 +43,11 @@ class Canvas(QWidget):
         painter.drawLine(250, 325,
                           250, 350)
 
+    def draw_object(self, painter, literal_object):
+        pen = QPen(QColor(200, 0, 0))
+        pen.setWidth(4)
+        painter.setPen(pen)
+        literal_object.draw(painter)
 
     def draw_grid(self):
         pass
