@@ -25,3 +25,11 @@ class GraphicObject(ABC):
     @property
     def coords(self) -> list[int]:
         return self.__coords
+
+    @abstractmethod
+    def draw(self, painter):
+        pass
+
+    @abstractmethod
+    def transform(self):
+        pass
