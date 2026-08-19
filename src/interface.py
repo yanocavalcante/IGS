@@ -19,8 +19,9 @@ from PyQt6.QtWidgets import (
 
 
 class SGIInterface(QMainWindow):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, controller):
+        super().__init__()
+        self.__controller = controller
         self.setWindowTitle('Interactive Graphic System')
         self.setGeometry(100, 100, 1024, 768)
 
@@ -35,7 +36,7 @@ class SGIInterface(QMainWindow):
         self.create_canvas()
 
     def create_canvas(self):
-        self.canvas = Canvas()
+        self.canvas = Canvas(self.display_file)
         self.canvas_layout = QVBoxLayout()
         self.canvas.setLayout(self.canvas_layout)
         self.main_layout.addWidget(self.canvas, 4)
@@ -141,7 +142,7 @@ class SGIInterface(QMainWindow):
         QMessageBox.information(self, "IGS", "You moved right!")
 
     def create_object(self):
-        object_dict = {"Name": "", "Type": "", "Coords": ""}
+        object_dict = {"Name": "", "Type": "", "Coords": []}
         dialog = QDialog(self)
         dialog.setWindowTitle("Create New Object")
 
@@ -161,11 +162,12 @@ class SGIInterface(QMainWindow):
         obj_type.addItems([
             "Point",
             "Line",
-            "Polygon"
+            "Wireframe"
         ])
+
         dialog_form_layout.addWidget(obj_type)
 
-        dialog_form_layout.addRow("Coords:", coords)
+        # dialog_form_layout.addRow("Coords:", coords)
 
         button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Cancel |
@@ -182,11 +184,63 @@ class SGIInterface(QMainWindow):
         if dialog.exec() == QDialog.DialogCode.Accepted:
             object_dict["Name"] = name.text()
             object_dict["Type"] = obj_type.currentText()
-            object_dict["Coords"] = coords.text()
+            match obj_type.currentText():
+                case "Point":
+                    point_dialog = QDialog(self)
+                    point_dialog.setWindowTitle("Point Coordinates")
+                    point_dialog_layout = QVBoxLayout(point_dialog)
+                    point_dialog_form_layout = QFormLayout()
+                    x = QLineEdit()
+                    point_dialog_form_layout.addRow("X:", x)
+                    y = QLineEdit()
+                    point_dialog_form_layout.addRow("Y:", y)
+                    point_button_box = QDialogButtonBox(
+                        QDialogButtonBox.StandardButton.Cancel |
+                        QDialogButtonBox.StandardButton.Ok
+                    )
+                    point_dialog_layout.addLayout(point_dialog_form_layout)
+                    point_dialog_layout.addWidget(point_button_box)
 
-            print(object_dict) # For testing - Remove
+                    point_button_box.rejected.connect(point_dialog.reject)
+                    point_button_box.accepted.connect(point_dialog.accept)
 
-            return object_dict
+                    if point_dialog.exec() == QDialog.DialogCode.Accepted: 
+                        object_dict["Coords"].append(int(x.text()))
+                        object_dict["Coords"].append(int(y.text()))
+                        print(object_dict)
+                        self.__controller.add_object(object_dict)
+
+                case "Line":
+                    line_dialog = QDialog(self)
+                    line_dialog.setWindowTitle("Point Coordinates")
+                    line_dialog_layout = QVBoxLayout(line_dialog)
+                    line_dialog_form_layout = QFormLayout()
+                    x1 = QLineEdit()
+                    line_dialog_form_layout.addRow("X1:", x1)
+                    y1 = QLineEdit()
+                    line_dialog_form_layout.addRow("Y1:", y1)
+                    x2 = QLineEdit()
+                    line_dialog_form_layout.addRow("X2:", x2)
+                    y2 = QLineEdit()
+                    line_dialog_form_layout.addRow("Y2:", y2)
+                    line_button_box = QDialogButtonBox(
+                        QDialogButtonBox.StandardButton.Cancel |
+                        QDialogButtonBox.StandardButton.Ok
+                    )
+                    line_dialog_layout.addLayout(line_dialog_form_layout)
+                    line_dialog_layout.addWidget(line_button_box)
+
+
+                    line_button_box.rejected.connect(line_dialog.reject)
+                    line_button_box.accepted.connect(line_dialog.accept)
+
+                    if line_dialog.exec() == QDialog.DialogCode.Accepted:
+                        object_dict["Coords"].append(int(x1.text()))
+                        object_dict["Coords"].append(int(y1.text()))
+                        object_dict["Coords"].append(int(x2.text()))
+                        object_dict["Coords"].append(int(y2.text()))
+                        print(object_dict)
+                        self.__controller.add_object(object_dict)
 
     def open_input_dialog(self):
         name, ok = QInputDialog.getText(
@@ -197,3 +251,7 @@ class SGIInterface(QMainWindow):
 
         if ok and name:
             self.setWindowTitle(name)
+
+    def add_object_to_df(self, literal_object):
+        self.display_file.append(literal_object)
+        self.canvas.update()
