@@ -65,6 +65,16 @@ class Window:
         self.__ywmin = center_y - half_height
         self.__ywmax = center_y + half_height
 
+    def match_aspect_ratio(self, aspect_ratio: float) -> None:
+        if aspect_ratio <= 0:
+            raise ValueError("Aspect ratio must be greater than zero")
+
+        center_x = (self.__xwmin + self.__xwmax) / 2
+        half_width = (self.height * aspect_ratio) / 2
+
+        self.__xwmin = center_x - half_width
+        self.__xwmax = center_x + half_width
+
     def __repr__(self) -> str:
         return (f"Window(xwmin={self.__xwmin:.1f}, ywmin={self.__ywmin:.1f}, "
                 f"xwmax={self.__xwmax:.1f}, ywmax={self.__ywmax:.1f})")

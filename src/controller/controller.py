@@ -43,7 +43,11 @@ class Controller:
         self.sgi.refresh_canvas()
 
     def resize_viewport(self, width: float, height: float) -> None:
+        if width <= 0 or height <= 0:
+            return
+
         self.viewport.resize(width, height)
+        self.window.match_aspect_ratio(width / height)
 
     def get_drawable_objects(self) -> list[tuple[GraphicObject, list[Coordinate]]]:
         return [
