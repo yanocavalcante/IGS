@@ -1,10 +1,16 @@
 # Interactive Graphic System
 
-Sistem Gráfico Interativo para Computação Gráfica baseado em `Python` e `PyQt`.
+Sistema Gráfico Interativo para Computação Gráfica baseado em `Python` e `PyQt`.
 
 ## Componentes
 
-Os principais componentes do sistema são: `Viewport`, `Window` e `Display File`.
+Os principais componentes do sistema são: `Viewport`, `Window` e `Display File`. Os objetos gráficos são representados sobre o `Canvas`.
+
+`Window`: Retângulo que representa o recorte do mundo 2D representado no `Display File` que será mostrado na tela.
+
+`Viewport`: Área do vídeo onde será, de fato, desenhado o que se deseja mostrar, através de um sistema de coordenadas parcialmente invertido, onde o eixo Y aponta para baixo.
+
+`Display File`: Estrutura responsável por armazenar os objetos gráficos que compõem a cena.
 
 ## Objetos
 
@@ -23,7 +29,7 @@ python3 -m venv {venv_name}
 Sendo `venv_name` o nome do ambiente virtual de sua escolha. Para ativá-lo e desativá-lo, respectivamente:
 
 ```bash
-source venv/bin/activate
+source {venv_name}/bin/activate
 
 deactivate
 ```
@@ -37,6 +43,7 @@ pip install -r requirements.txt
 Por fim, com os pacotes instalados, basta executar o arquivo principal presente na pasta `src/`:
 
 ```bash
+cd src/
 python3 main.py
 ```
 
