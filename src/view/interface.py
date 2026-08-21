@@ -36,12 +36,12 @@ class SGIInterface(QMainWindow):
 
     def __create_canvas(self) -> None:
         self.canvas = Canvas(self.__controller)
-        self.main_layout.addWidget(self.canvas, 4)
+        self.main_layout.addWidget(self.canvas, 3)
 
     def __create_menu(self) -> None:
-        menu = QWidget()
-        menu_layout = QVBoxLayout(menu)
-        self.main_layout.addWidget(menu, 1)
+        self.menu = QWidget()
+        menu_layout = QVBoxLayout(self.menu)
+        self.main_layout.addWidget(self.menu, 1)
 
         menu_layout.addWidget(QLabel("Zoom"))
         zoom_layout = QGridLayout()
