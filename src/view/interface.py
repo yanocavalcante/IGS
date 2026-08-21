@@ -8,10 +8,12 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QWidget,
+    QMessageBox
 )
 
 from view.canvas import Canvas
 from view.dialogs.create_object_dialog import CreateObjectDialog
+from view.dialogs.transform_object_dialog import TransformObjectDialog
 
 PAN_STEP = 20        
 ZOOM_IN_FACTOR = 0.9  
@@ -22,6 +24,7 @@ class SGIInterface(QMainWindow):
     def __init__(self, controller) -> None:
         super().__init__()
         self.__controller = controller
+        self.__pending_transformation: dict | None = None
         self.setWindowTitle("Interactive Graphic System")
         self.setGeometry(100, 100, 1024, 768)
 
@@ -59,7 +62,9 @@ class SGIInterface(QMainWindow):
 
         menu_layout.addWidget(QLabel("Objects"))
         objects_layout = QGridLayout()
-        self.__add_button(objects_layout, "Create New Object", self.__create_object, 0, 0)
+        self.__add_button(objects_layout, "Create", self.__create_object, 0, 0)
+        self.__add_button(objects_layout, "Transform", self.__transform, 0, 1)
+
         menu_layout.addLayout(objects_layout)
 
         menu_layout.addWidget(QLabel("Display File"))
@@ -96,6 +101,18 @@ class SGIInterface(QMainWindow):
         obj_dict = dialog.get_object_dict()
         if obj_dict is not None:
             self.__controller.add_object(obj_dict)
+
+    def __transform(self) -> None:
+        current_obj = self.object_list.currentItem()
+        if not current_obj:
+            QMessageBox.warning(self, "IGS", "Please select an object to transform!")
+            return
+
+        dialog = TransformObjectDialog(current_obj.text(), self)
+        transformation_dict = dialog.get_object_transformation_dict()
+        print(transformation_dict)
+        if transformation_dict is not None:
+            self.__pending_transformation = transformation_dict
 
     def refresh_canvas(self) -> None:
         self.canvas.update()
