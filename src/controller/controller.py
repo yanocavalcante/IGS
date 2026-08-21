@@ -23,6 +23,7 @@ class Controller:
         self.window = Window(0, 0, 600, 400)
         self.viewport = Viewport(0, 0, 600, 400)
         self.sgi = SGIInterface(self)
+        self.canvas = self.sgi.canvas
 
     def add_object(self, obj_dict: dict) -> None:
         obj_class, obj_type = _TYPE_MAP[obj_dict["Type"]]
@@ -40,6 +41,9 @@ class Controller:
     def zoom(self, factor: float) -> None:
         self.window.zoom(factor)
         self.sgi.refresh_canvas()
+
+    def resize_viewport(self, width: float, height: float) -> None:
+        self.viewport.resize(width, height)
 
     def get_drawable_objects(self) -> list[tuple[GraphicObject, list[Coordinate]]]:
         return [

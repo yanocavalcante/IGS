@@ -17,3 +17,7 @@ class Canvas(QWidget):
 
         for obj, vp_coords in self.__controller.get_drawable_objects():
             obj.draw(painter, vp_coords)
+
+    def resizeEvent(self, event) -> None:
+        self.__controller.resize_viewport(self.width(), self.height())
+        super().resizeEvent(event)
