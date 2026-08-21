@@ -9,17 +9,33 @@ class Window:
     def xwmin(self) -> float:
         return self.__xwmin
 
+    @xwmin.setter
+    def xwmin(self, value):
+        self.__xwmin = value        
+
     @property
     def ywmin(self) -> float:
         return self.__ywmin
+
+    @ywmin.setter
+    def ywmin(self, value):
+        self.__ywmin = value        
 
     @property
     def xwmax(self) -> float:
         return self.__xwmax
 
+    @xwmax.setter
+    def xwmax(self, value):
+        self.__xwmax = value        
+
     @property
     def ywmax(self) -> float:
         return self.__ywmax
+
+    @ywmax.setter
+    def ywmax(self, value):
+        self.__ywmax = value        
 
     @property
     def width(self) -> float:
@@ -30,23 +46,24 @@ class Window:
         return self.__ywmax - self.__ywmin
 
     def pan(self, dx: float, dy: float) -> None:
-        """
-        Move a window no mundo (navegação).
-
-        TODO: implementar. Deve deslocar xwmin/ywmin/xwmax/ywmax por
-        (dx, dy), mantendo a largura e altura da window inalteradas.
-        """
-        raise NotImplementedError
+        self.xwmin += dx
+        self.xwmax += dx
+        self.ywmin += dy
+        self.ywmax += dy
 
     def zoom(self, factor: float) -> None:
-        """
-        Redimensiona a window (zoom in/out).
+        if factor <= 0:
+            raise ValueError("Zoom factor must be greater than zero")
 
-        TODO: implementar. factor > 1 deve aumentar a window (zoom out,
-        vê mais mundo); factor < 1 deve diminuí-la (zoom in). Pense em
-        como manter o centro da window fixo durante a operação.
-        """
-        raise NotImplementedError
+        center_x = (self.__xwmin + self.__xwmax) / 2
+        center_y = (self.__ywmin + self.__ywmax) / 2
+        half_width = (self.width * factor) / 2
+        half_height = (self.height * factor) / 2
+
+        self.__xwmin = center_x - half_width
+        self.__xwmax = center_x + half_width
+        self.__ywmin = center_y - half_height
+        self.__ywmax = center_y + half_height
 
     def __repr__(self) -> str:
         return (f"Window(xwmin={self.__xwmin:.1f}, ywmin={self.__ywmin:.1f}, "
