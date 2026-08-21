@@ -12,22 +12,13 @@ from view.dialogs.line_dialog import LineDialog
 from view.dialogs.point_dialog import PointDialog
 from view.dialogs.wireframe_dialog import WireframeDialog
 
-# Cada entrada mapeia o nome exibido no combo -> classe do sub-diálogo
-# responsável por coletar as coordenadas daquele tipo.
 _COORD_DIALOGS = {
     "Point": PointDialog,
     "Line": LineDialog,
     "Wireframe": WireframeDialog,
 }
 
-
 class CreateObjectDialog(QDialog):
-    """
-    Primeiro passo da criação de objeto: nome + tipo.
-    Ao confirmar, abre o sub-diálogo de coordenadas correspondente
-    ao tipo escolhido (Point/Line/Wireframe).
-    """
-
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Create New Object")
@@ -55,11 +46,6 @@ class CreateObjectDialog(QDialog):
         self.__result: dict | None = None
 
     def get_object_dict(self) -> dict | None:
-        """
-        Executa o fluxo completo (nome/tipo -> coordenadas) e retorna
-        um dict pronto para Controller.add_object(), ou None se o
-        usuário cancelou em qualquer etapa.
-        """
         if self.exec() != QDialog.DialogCode.Accepted:
             return None
 
@@ -67,7 +53,7 @@ class CreateObjectDialog(QDialog):
         obj_type = self.__type.currentText()
 
         if not name:
-            QMessageBox.warning(self, "IGS", "Informe um nome para o objeto.")
+            QMessageBox.warning(self, "IGS", "Set a name for the new object!")
             return None
 
         coord_dialog_class = _COORD_DIALOGS[obj_type]

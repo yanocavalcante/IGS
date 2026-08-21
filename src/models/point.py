@@ -4,8 +4,6 @@ from models.obj_type import ObjectType
 
 
 class Point(GraphicObject):
-    """Objeto do display file com um único par de coordenadas."""
-
     def __init__(self, name: str, id: int, type: ObjectType, coords: list[Coordinate]):
         super().__init__(name, id, type, coords)
 

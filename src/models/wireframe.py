@@ -4,13 +4,6 @@ from models.obj_type import ObjectType
 
 
 class Wireframe(GraphicObject):
-    """
-    Objeto do display file com N pontos interconectados (polígono).
-
-    Desenha um segmento entre cada par consecutivo de vértices e,
-    por padrão, fecha a figura ligando o último vértice ao primeiro.
-    """
-
     def __init__(self, name: str, id: int, type: ObjectType, coords: list[Coordinate],
                  closed: bool = True):
         super().__init__(name, id, type, coords)

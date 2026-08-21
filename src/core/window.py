@@ -1,13 +1,4 @@
 class Window:
-    """
-    Retângulo em coordenadas de MUNDO que representa o recorte
-    atualmente "enquadrado" (seção 1.10/1.11 do material).
-
-    Responsável por navegação (pan) e zoom -- é o único lugar do
-    sistema que muda quando o usuário navega ou dá zoom. Não sabe
-    nada sobre Viewport, Canvas ou objetos gráficos.
-    """
-
     def __init__(self, xwmin: float, ywmin: float, xwmax: float, ywmax: float) -> None:
         self.__xwmin = xwmin
         self.__ywmin = ywmin

@@ -1,11 +1,8 @@
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QFormLayout, QLineEdit, QVBoxLayout
-
 from core.coordinate import Coordinate
 
 
 class PointDialog(QDialog):
-    """Coleta as coordenadas (x, y) de um novo Point."""
-
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Point Coordinates")

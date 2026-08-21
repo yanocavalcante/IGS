@@ -7,17 +7,10 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QVBoxLayout,
 )
-
 from core.coordinate import Coordinate
 
 
 class WireframeDialog(QDialog):
-    """
-    Coleta uma quantidade variável de vértices para um Wireframe.
-
-    Formato de entrada: "x1,y1; x2,y2; x3,y3" (mínimo 3 pontos).
-    """
-
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Wireframe Coordinates")
@@ -28,7 +21,7 @@ class WireframeDialog(QDialog):
         self.__coords_field = QLineEdit()
         self.__coords_field.setPlaceholderText("e.g. 10,10; 50,10; 30,50")
         form.addRow("Vertices:", self.__coords_field)
-        layout.addWidget(QLabel("Separe cada ponto com ';' e x,y com ','"))
+        layout.addWidget(QLabel("Input different points using ';' and x, y coordinates with ','"))
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok
@@ -45,11 +38,11 @@ class WireframeDialog(QDialog):
         try:
             coords = self.__parse(self.__coords_field.text())
             if len(coords) < 3:
-                raise ValueError("Um wireframe precisa de pelo menos 3 pontos.")
+                raise ValueError("A wireframe needs, at least, 3 points.")
             self.__coords = coords
             self.accept()
         except ValueError as e:
-            QMessageBox.warning(self, "Entrada inválida", str(e))
+            QMessageBox.warning(self, "Invalid input", str(e))
 
     @staticmethod
     def __parse(text: str) -> list[Coordinate]:

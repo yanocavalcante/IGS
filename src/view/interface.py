@@ -13,19 +13,12 @@ from PyQt6.QtWidgets import (
 from view.canvas import Canvas
 from view.dialogs.create_object_dialog import CreateObjectDialog
 
-PAN_STEP = 20        # unidades de mundo por clique de navegação
-ZOOM_IN_FACTOR = 0.9  # < 1 encolhe a window (zoom in)
-ZOOM_OUT_FACTOR = 1.1  # > 1 aumenta a window (zoom out)
+PAN_STEP = 20        
+ZOOM_IN_FACTOR = 0.9  
+ZOOM_OUT_FACTOR = 1.1
 
 
 class SGIInterface(QMainWindow):
-    """
-    View principal (Qt). Não guarda display_file nem qualquer outro
-    dado de modelo -- só monta widgets, encaminha eventos de UI para
-    o Controller, e expõe refresh_canvas() para o Controller chamar
-    quando algo precisa ser repintado.
-    """
-
     def __init__(self, controller) -> None:
         super().__init__()
         self.__controller = controller
@@ -40,8 +33,6 @@ class SGIInterface(QMainWindow):
 
         self.__create_menu()
         self.__create_canvas()
-
-    # ---- construção da UI --------------------------------------------------
 
     def __create_canvas(self) -> None:
         self.canvas = Canvas(self.__controller)
@@ -82,8 +73,6 @@ class SGIInterface(QMainWindow):
         button.clicked.connect(callback)
         layout.addWidget(button, row, column)
 
-    # ---- handlers de zoom/navegação -> Controller ------------------------------
-
     def __zoom_in(self) -> None:
         self.__controller.zoom(ZOOM_IN_FACTOR)
 
@@ -102,15 +91,11 @@ class SGIInterface(QMainWindow):
     def __move_right(self) -> None:
         self.__controller.pan(PAN_STEP, 0)
 
-    # ---- criação de objeto ----------------------------------------------------
-
     def __create_object(self) -> None:
         dialog = CreateObjectDialog(self)
         obj_dict = dialog.get_object_dict()
         if obj_dict is not None:
             self.__controller.add_object(obj_dict)
-
-    # ---- chamado pelo Controller quando algo muda -----------------------------
 
     def refresh_canvas(self) -> None:
         self.canvas.update()
@@ -122,5 +107,4 @@ class SGIInterface(QMainWindow):
             self.object_list.addItem(f"{obj.type.name}({obj.name})")
 
 
-# reexportado para manter compatibilidade com main.py (from interface import QApplication)
 __all__ = ["SGIInterface", "QApplication"]

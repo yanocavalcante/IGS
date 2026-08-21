@@ -1,11 +1,8 @@
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QFormLayout, QLineEdit, QVBoxLayout
-
 from core.coordinate import Coordinate
 
 
 class LineDialog(QDialog):
-    """Coleta as coordenadas dos dois pontos finais de uma Line."""
-
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Line Coordinates")
