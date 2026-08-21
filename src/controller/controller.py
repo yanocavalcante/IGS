@@ -25,6 +25,8 @@ class Controller:
         self.sgi = SGIInterface(self)
         self.canvas = self.sgi.canvas
 
+        self.testing()
+
     def add_object(self, obj_dict: dict) -> None:
         obj_class, obj_type = _TYPE_MAP[obj_dict["Type"]]
         self.display_file.add(obj_class, obj_type, obj_dict["Name"], obj_dict["Coords"])
@@ -54,3 +56,9 @@ class Controller:
             (obj, self.viewport.transform_all(obj.coords, self.window))
             for obj in self.display_file.objects
         ]
+
+    def testing(self):
+        self.add_object({"Name": "teste",
+                         "Type": "Wireframe",
+                         "Coords": [Coordinate(0,0), Coordinate(200, 200),
+                                                     Coordinate(400,0)]})
