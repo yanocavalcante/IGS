@@ -1,11 +1,11 @@
-from controller import Controller
-from interface import SGIInterface, QApplication
 import sys
 
+from PyQt6.QtWidgets import QApplication
 
-if __name__ == '__main__':
+from controller.controller import Controller
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     controller = Controller()
-    window = controller.sgi
-    window.show()
+    controller.sgi.show()
     sys.exit(app.exec())

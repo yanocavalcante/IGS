@@ -1,5 +1,3 @@
-if [ -f "./src/main.py" ]; then
-    python3 ./src/main.py
-else
-    echo "Something went wrong."
-fi
+#!/bin/bash
+cd "$(dirname "$0")/src"
+python3 main.py
