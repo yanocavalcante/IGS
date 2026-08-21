@@ -104,7 +104,7 @@ class SGIInterface(QMainWindow):
     def __refresh_object_list(self) -> None:
         self.object_list.clear()
         for obj in self.__controller.display_file.objects:
-            self.object_list.addItem(f"{obj.type.name}({obj.name})")
+            self.object_list.addItem(f"{obj.id} - '{obj.name}'({obj.type.name})")
 
 
 __all__ = ["SGIInterface", "QApplication"]
