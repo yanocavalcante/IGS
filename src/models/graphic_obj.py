@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from obj_type import ObjectType
+from core.coordinate import Coordinate
+from models.obj_type import ObjectType
 
 
 class GraphicObject(ABC):
     @abstractmethod
-    def __init__(self, name: str, id: int, type: ObjectType, coords: list[int]) -> None:
+    def __init__(self, name: str, id: int, type: ObjectType, coords: list[Coordinate]) -> None:
         self.__name = name
         self.__id = id
         self.__type = type
@@ -23,13 +24,12 @@ class GraphicObject(ABC):
         return self.__type
 
     @property
-    def coords(self) -> list[int]:
+    def coords(self) -> list[Coordinate]:
         return self.__coords
 
     @abstractmethod
-    def draw(self, painter):
-        pass
+    def draw(self, painter, vp_coords: list[Coordinate]) -> None:
+        ...
 
-    @abstractmethod
-    def transform(self):
-        pass
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(id={self.__id}, name={self.__name!r})"
