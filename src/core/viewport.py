@@ -25,9 +25,15 @@ class Viewport:
     def yvpmax(self) -> float:
         return self.__yvpmax
 
+    def resize(self, width: float, height: float) -> None:
+        self.__xvpmin = 0
+        self.__yvpmin = 0
+        self.__xvpmax = width
+        self.__yvpmax = height
+
     def transform(self, coord: Coordinate, window: Window) -> Coordinate:
-        xvp = ((coord.x - window.xwmin) / window.width) * (self.__xvpmax - self.__xvpmin)
-        yvp = (1 - (coord.y - window.ywmin) / window.height) * (self.__yvpmax - self.__yvpmin)
+        xvp = self.__xvpmin + ((coord.x - window.xwmin) / window.width) * (self.__xvpmax - self.__xvpmin)
+        yvp = self.__yvpmin + (1 - (coord.y - window.ywmin) / window.height) * (self.__yvpmax - self.__yvpmin)
 
         return Coordinate(xvp, yvp)
 
