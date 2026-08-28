@@ -1,6 +1,7 @@
 from core.coordinate import Coordinate
 from core.viewport import Viewport
 from core.window import Window
+from core.transformer import Transformer
 from models.display_file import DisplayFile
 from models.graphic_obj import GraphicObject
 from models.line import Line
@@ -23,6 +24,7 @@ class Controller:
         self.window = Window(0, 0, 600, 400)
         self.viewport = Viewport(0, 0, 600, 400)
         self.sgi = SGIInterface(self)
+        self.transformer = Transformer()
         self.canvas = self.sgi.canvas
 
         self.testing()
@@ -34,6 +36,17 @@ class Controller:
 
     def remove_object(self, obj_id: int) -> None:
         self.display_file.remove(obj_id)
+        self.sgi.refresh_canvas()
+
+    def transform_object(self, transformation_dict: dict) -> None:
+        object_id = int(transformation_dict["object"].split(" - ", 1)[0])
+        match transformation_dict["operation"]:
+            case("translation"):
+                self.transformer.translate(self.display_file.get_by_id(object_id), 0, 0)
+            case("rotation"):
+                self.transformer.rotate(self.display_file.get_by_id(object_id), transformation_dict)
+            case("scaling"):
+                self.transformer.scale(self.display_file.get_by_id(object_id), 0, 0)
         self.sgi.refresh_canvas()
 
     def pan(self, dx: float, dy: float) -> None:
