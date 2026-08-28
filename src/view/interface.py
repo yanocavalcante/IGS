@@ -112,7 +112,7 @@ class SGIInterface(QMainWindow):
         transformation_dict = dialog.get_object_transformation_dict()
         print(transformation_dict)
         if transformation_dict is not None:
-            self.__pending_transformation = transformation_dict
+            self.__controller.transform_object(transformation_dict)
 
     def refresh_canvas(self) -> None:
         self.canvas.update()

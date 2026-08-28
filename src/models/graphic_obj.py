@@ -27,6 +27,10 @@ class GraphicObject(ABC):
     def coords(self) -> list[Coordinate]:
         return self.__coords
 
+    @coords.setter
+    def coords(self, coords):
+        self.__coords = coords
+
     @abstractmethod
     def draw(self, painter, vp_coords: list[Coordinate]) -> None:
         ...
