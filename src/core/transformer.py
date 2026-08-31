@@ -15,7 +15,25 @@ class Transformer:
         return
 
     def rotate(self, obj, angle):
-        pass
+        matrix = np.array([[np.cos(angle), np.sin(angle), 0],
+                           [-np.sin(angle), np.cos(angle), 0],
+                           [0, 0 , 1]])
+        new_coords = []
+        for coords in obj.coords:
+            hom_new_coord = coords.homogeneous() @ matrix
+            new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
+
+        obj.coords = new_coords
+
+        return
 
     def scale(self, obj, sx, sy):
-        pass
+        matrix = np.array([[sx, 0, 0], [0, sy, 0], [0, 0, 1]])
+        new_coords = []
+        for coords in obj.coords:
+            hom_new_coord = coords.homogeneous() @ matrix
+            new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
+
+        obj.coords = new_coords
+
+        return

@@ -42,11 +42,11 @@ class Controller:
         object_id = int(transformation_dict["object"].split(" - ", 1)[0])
         match transformation_dict["operation"]:
             case("translation"):
-                self.transformer.translate(self.display_file.get_by_id(object_id), 0, 0)
+                self.transformer.translate(self.display_file.get_by_id(object_id), transformation_dict["dx"], transformation_dict["dy"])
             case("rotation"):
-                self.transformer.rotate(self.display_file.get_by_id(object_id), transformation_dict)
+                self.transformer.rotate(self.display_file.get_by_id(object_id), transformation_dict["angle"])
             case("scaling"):
-                self.transformer.scale(self.display_file.get_by_id(object_id), 0, 0)
+                self.transformer.scale(self.display_file.get_by_id(object_id), transformation_dict["sx"], transformation_dict["sy"])
         self.sgi.refresh_canvas()
 
     def pan(self, dx: float, dy: float) -> None:
