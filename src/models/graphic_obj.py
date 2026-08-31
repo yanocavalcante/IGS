@@ -27,9 +27,25 @@ class GraphicObject(ABC):
     def coords(self) -> list[Coordinate]:
         return self.__coords
 
+    @coords.setter
+    def coords(self, coords):
+        self.__coords = coords
+
     @abstractmethod
     def draw(self, painter, vp_coords: list[Coordinate]) -> None:
         ...
+
+    def center(self):
+        sumX = 0
+        sumY = 0
+        for coord in self.coords:
+            sumX += coord.x
+            sumY += coord.y
+
+        cx = sumX / len(self.coords)
+        cy = sumY / len(self.coords)
+
+        return cx, cy
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self.__id}, name={self.__name!r})"
