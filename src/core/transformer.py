@@ -15,15 +15,17 @@ class Transformer:
         return
 
     def rotate(self, obj, angle, center):
-        "Should/Could we use the function 'translate' to do parts of it?"
+        # Should/Could we use the function 'translate' to do parts of it?
         cx, cy = obj.center()
+        # Numpy uses radians instead of degrees
+        angle = angle * (np.pi/180)
+
         origin_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [-cx, -cy, 1]])
         rotate_matrix = np.array([[np.cos(angle), np.sin(angle), 0],
                            [-np.sin(angle), np.cos(angle), 0],
                            [0, 0 , 1]])
         center_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [cx, cy, 1]])
         new_coords = []
-        print(f"Center:", center)
 
         match center:
             case("world"):
@@ -46,7 +48,7 @@ class Transformer:
         return
 
     def scale(self, obj, sx, sy):
-        "Should/Could we use the function 'translate' to do parts of it?"
+        # Should/Could we use the function 'translate' to do parts of it?
         cx, cy = obj.center()
 
         origin_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [-cx, -cy, 1]])
