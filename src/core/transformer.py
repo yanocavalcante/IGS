@@ -14,24 +14,48 @@ class Transformer:
 
         return
 
-    def rotate(self, obj, angle):
-        matrix = np.array([[np.cos(angle), np.sin(angle), 0],
+    def rotate(self, obj, angle, center):
+        "Should/Could we use the function 'translate' to do parts of it?"
+        cx, cy = obj.center()
+        origin_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [-cx, -cy, 1]])
+        rotate_matrix = np.array([[np.cos(angle), np.sin(angle), 0],
                            [-np.sin(angle), np.cos(angle), 0],
                            [0, 0 , 1]])
+        center_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [cx, cy, 1]])
         new_coords = []
-        for coords in obj.coords:
-            hom_new_coord = coords.homogeneous() @ matrix
-            new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
+        print(f"Center:", center)
+
+        match center:
+            case("world"):
+                for coords in obj.coords:
+                    hom_new_coord = coords.homogeneous() @ rotate_matrix
+                    new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
+            case("object"):
+                for coords in obj.coords:
+                    hom_new_coord = coords.homogeneous() @ origin_trans_matrix @ rotate_matrix @ center_trans_matrix
+                    new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))             
+            case _:
+                minus_arbitrary_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [-center[0], -center[1], 1]])
+                arbitrary_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [center[0], center[1], 1]])
+                for coords in obj.coords:
+                    hom_new_coord = coords.homogeneous() @ minus_arbitrary_trans_matrix @ rotate_matrix @ arbitrary_trans_matrix
+                    new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
 
         obj.coords = new_coords
 
         return
 
     def scale(self, obj, sx, sy):
-        matrix = np.array([[sx, 0, 0], [0, sy, 0], [0, 0, 1]])
+        "Should/Could we use the function 'translate' to do parts of it?"
+        cx, cy = obj.center()
+
+        origin_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [-cx, -cy, 1]])
+        scale_matrix = np.array([[sx, 0, 0], [0, sy, 0], [0, 0, 1]])
+        center_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [cx, cy, 1]])
+
         new_coords = []
         for coords in obj.coords:
-            hom_new_coord = coords.homogeneous() @ matrix
+            hom_new_coord = coords.homogeneous() @ origin_trans_matrix @ scale_matrix @ center_trans_matrix
             new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
 
         obj.coords = new_coords
