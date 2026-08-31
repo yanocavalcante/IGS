@@ -8,6 +8,9 @@ from PyQt6.QtWidgets import (
     QStackedWidget,
     QVBoxLayout,
     QWidget,
+    QRadioButton,
+    QButtonGroup,
+    QLabel,
 )
 
 
@@ -72,8 +75,41 @@ class TransformObjectDialog(QDialog):
 
         self.angle_input = QLineEdit()
         self.angle_input.setPlaceholderText("e.g. 45°")
-
         layout.addRow("Angle:", self.angle_input)
+
+        self.object_center_radio = QRadioButton("Object Center")
+        self.world_center_radio = QRadioButton("World Center")
+        self.arbitrary_point_radio = QRadioButton("Arbitrary Point")
+
+        self.object_center_radio.setChecked(True)
+
+        self.rotation_group = QButtonGroup(widget)
+        self.rotation_group.addButton(self.object_center_radio)
+        self.rotation_group.addButton(self.world_center_radio)
+        self.rotation_group.addButton(self.arbitrary_point_radio)
+
+        layout.addWidget(QLabel("Rotation Center"))
+        layout.addRow("", self.object_center_radio)
+        layout.addRow("", self.world_center_radio)
+        layout.addRow("", self.arbitrary_point_radio)
+
+        self.arbitrary_x_input = QLineEdit()
+        self.arbitrary_x_input.setPlaceholderText("e.g. 10")
+        self.arbitrary_y_input = QLineEdit()
+        self.arbitrary_y_input.setPlaceholderText("e.g. 20")
+
+        layout.addRow("X:", self.arbitrary_x_input)
+        layout.addRow("Y:", self.arbitrary_y_input)
+
+        self.arbitrary_x_input.setEnabled(False)
+        self.arbitrary_y_input.setEnabled(False)
+
+        self.arbitrary_point_radio.toggled.connect(
+            lambda checked: (
+                self.arbitrary_x_input.setEnabled(checked),
+                self.arbitrary_y_input.setEnabled(checked),
+            )
+        )
 
         return widget
 
@@ -110,10 +146,19 @@ class TransformObjectDialog(QDialog):
                 }
 
             elif operation == "Rotation":
+                if self.object_center_radio.isChecked():
+                    center = "object"
+                elif self.world_center_radio.isChecked():
+                    center = "world"
+                else:
+                    center = (float(self.arbitrary_x_input.text()),
+                              float(self.arbitrary_y_input.text())
+                            )
                 self.__result = {
                     "object": self.__current_object,
                     "operation": "rotation",
                     "angle": float(self.angle_input.text()),
+                    "center": center
                 }
 
             elif operation == "Scaling":
