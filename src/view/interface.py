@@ -18,6 +18,7 @@ from view.dialogs.transform_object_dialog import TransformObjectDialog
 PAN_STEP = 20        
 ZOOM_IN_FACTOR = 0.9  
 ZOOM_OUT_FACTOR = 1.1
+ROTATION_FACTOR = 15
 
 
 class SGIInterface(QMainWindow):
@@ -54,7 +55,9 @@ class SGIInterface(QMainWindow):
 
         menu_layout.addWidget(QLabel("Navigation"))
         nav_layout = QGridLayout()
+        self.__add_button(nav_layout, "Rotate Left", self.__rotate_left, 1, 0)
         self.__add_button(nav_layout, "Up", self.__move_up, 1, 1)
+        self.__add_button(nav_layout, "Rotate Right", self.__rotate_right, 1, 2)
         self.__add_button(nav_layout, "Left", self.__move_left, 2, 0)
         self.__add_button(nav_layout, "Down", self.__move_down, 2, 1)
         self.__add_button(nav_layout, "Right", self.__move_right, 2, 2)
@@ -95,6 +98,12 @@ class SGIInterface(QMainWindow):
 
     def __move_right(self) -> None:
         self.__controller.pan(PAN_STEP, 0)
+
+    def __rotate_left(self) -> None:
+        self.__controller.rotate(ROTATION_FACTOR)
+
+    def __rotate_right(self) -> None:
+        self.__controller.rotate(-ROTATION_FACTOR)
 
     def __create_object(self) -> None:
         dialog = CreateObjectDialog(self)
