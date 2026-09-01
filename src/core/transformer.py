@@ -63,3 +63,22 @@ class Transformer:
         obj.coords = new_coords
 
         return
+
+    def normalize(self, obj, window):
+        angle = window.angle * (np.pi/180)
+        translation_norm_matrix = np.array([[1, 0, 0], [0, 1, 0], [-window.center[0], -window.center[1], 1]])
+        rotation_norm_matrix = np.array([[np.cos(angle), np.sin(angle), 0], 
+                                         [-np.sin(angle), np.cos(angle), 0], 
+                                         [0, 0, 1]])
+        scaling_norm_matrix = np.array([[1/3, 0, 0], [0, 1/2, 0], [0, 0, 1]])
+
+        normalization_matrix = translation_norm_matrix @ rotation_norm_matrix @ scaling_norm_matrix
+
+        new_coords = []
+        for coords in obj.coords:
+            hom_new_coord = coords.homogeneous() @ normalization_matrix
+            new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
+
+        obj.norm_coords = new_coords
+
+        return

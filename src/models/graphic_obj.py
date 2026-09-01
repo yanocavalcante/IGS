@@ -10,6 +10,7 @@ class GraphicObject(ABC):
         self.__id = id
         self.__type = type
         self.__coords = coords
+        self.__norm_coords = coords
 
     @property
     def name(self) -> str:
@@ -30,6 +31,14 @@ class GraphicObject(ABC):
     @coords.setter
     def coords(self, coords):
         self.__coords = coords
+
+    @property
+    def norm_coords(self) -> list[Coordinate]:
+        return self.__norm_coords
+
+    @norm_coords.setter
+    def norm_coords(self, norm_coords):
+        self.__norm_coords = norm_coords
 
     @abstractmethod
     def draw(self, painter, vp_coords: list[Coordinate]) -> None:

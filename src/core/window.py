@@ -5,6 +5,14 @@ class Window:
         self.__xwmax = xwmax
         self.__ywmax = ywmax
 
+        self.__norm_xwmin = -1
+        self.__norm_ywmin = -1
+        self.__norm_xwmax = 1
+        self.__norm_ywmax = 1
+
+        # Describes the angle (theta) between the Y axis and Vup
+        self.__angle = 0
+
     @property
     def xwmin(self) -> float:
         return self.__xwmin
@@ -38,12 +46,41 @@ class Window:
         self.__ywmax = value        
 
     @property
+    def norm_xwmin(self) -> float:
+        return self.__norm_xwmin
+      
+    @property
+    def norm_ywmin(self) -> float:
+        return self.__norm_ywmin
+
+    @property
+    def norm_xwmax(self) -> float:
+        return self.__norm_xwmax
+
+    @property
+    def norm_ywmax(self) -> float:
+        return self.__norm_ywmax
+      
+    @property
     def width(self) -> float:
         return self.__xwmax - self.__xwmin
 
     @property
     def height(self) -> float:
         return self.__ywmax - self.__ywmin
+
+    @property
+    def center(self) -> list[float]:
+        return [((self.__xwmin + self.__xwmax) / 2),
+                ((self.__ywmin + self.__ywmax) / 2)]
+
+    @property
+    def angle(self) -> float:
+        return self.__angle
+
+    @angle.setter
+    def angle(self, value):
+        self.__angle = value
 
     def pan(self, dx: float, dy: float) -> None:
         self.xwmin += dx
@@ -64,6 +101,9 @@ class Window:
         self.__xwmax = center_x + half_width
         self.__ywmin = center_y - half_height
         self.__ywmax = center_y + half_height
+
+    def rotate(self, factor: float) -> None:
+        self.__angle += factor
 
     def match_aspect_ratio(self, aspect_ratio: float) -> None:
         if aspect_ratio <= 0:
