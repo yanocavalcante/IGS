@@ -40,8 +40,8 @@ class Viewport:
         self.__yvpmax = height
 
     def transform(self, coord: Coordinate, window: Window) -> Coordinate:
-        xvp = ((coord.x - window.xwmin) / window.width) * (self.width)
-        yvp = (1 - (coord.y - window.ywmin) / window.height) * (self.height)
+        xvp = ((coord.x - window.norm_xwmin) / 2) * (self.width)
+        yvp = (1 - (coord.y - window.norm_ywmin) / 2) * (self.height)
 
         return Coordinate(xvp, yvp)
 
