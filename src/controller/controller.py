@@ -57,6 +57,10 @@ class Controller:
         self.window.zoom(factor)
         self.sgi.refresh_canvas()
 
+    def rotate(self, factor: float) -> None:
+        self.window.rotate(factor)
+        self.sgi.refresh_canvas()
+
     def resize_viewport(self, width: float, height: float) -> None:
         if width <= 0 or height <= 0:
             return
@@ -66,8 +70,7 @@ class Controller:
 
     def get_drawable_objects(self) -> list[tuple[GraphicObject, list[Coordinate]]]:
         return [
-            (obj, self.viewport.transform_all(obj.coords, self.window))
-            for obj in self.display_file.objects
+            (obj, self.viewport.transform_all(obj.norm_coords, self.window)) for obj in self.display_file.objects
         ]
 
     def testing(self):
