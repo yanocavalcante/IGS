@@ -2,12 +2,33 @@ import numpy as np
 from .coordinate import Coordinate
 
 class Transformer:
+    def __init__(self, window):
+        self.__normalization_matrix = self.update_normalization_matrix(window)
+
+    @property
+    def normalization_matrix(self):
+        return self.__normalization_matrix
+
+    @normalization_matrix.setter
+    def normalization_matrix(self, value):
+        self.__normalization_matrix = value
+
+    def update_normalization_matrix(self, window):
+        angle = -window.angle * (np.pi/180)
+        translation_norm_matrix = np.array([[1, 0, 0], [0, 1, 0], [-window.center[0], -window.center[1], 1]])
+        rotation_norm_matrix = np.array([[np.cos(angle), np.sin(angle), 0],
+                                         [-np.sin(angle), np.cos(angle), 0],
+                                         [0, 0, 1]])
+        scaling_norm_matrix = np.array([[2/window.width, 0, 0], [0, 2/window.height, 0], [0, 0, 1]])
+
+        self.__normalization_matrix = translation_norm_matrix @ rotation_norm_matrix @ scaling_norm_matrix
+        return self.__normalization_matrix
+
     def translate(self, obj, dx, dy):
         matrix = np.array([[1, 0, 0], [0, 1, 0], [dx, dy, 1]])
         new_coords = []
         for coords in obj.coords:
             hom_new_coord = coords.homogeneous() @ matrix
-            print(f"The results of the matrix multiplication is: {hom_new_coord}")
             new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
 
         obj.coords = new_coords
@@ -64,21 +85,12 @@ class Transformer:
 
         return
 
-    def normalize(self, obj, window):
-        angle = window.angle * (np.pi/180)
-        translation_norm_matrix = np.array([[1, 0, 0], [0, 1, 0], [-window.center[0], -window.center[1], 1]])
-        rotation_norm_matrix = np.array([[np.cos(angle), np.sin(angle), 0], 
-                                         [-np.sin(angle), np.cos(angle), 0], 
-                                         [0, 0, 1]])
-        scaling_norm_matrix = np.array([[1/3, 0, 0], [0, 1/2, 0], [0, 0, 1]])
-
-        normalization_matrix = translation_norm_matrix @ rotation_norm_matrix @ scaling_norm_matrix
-
+    def normalize(self, obj):
         new_coords = []
         for coords in obj.coords:
-            hom_new_coord = coords.homogeneous() @ normalization_matrix
+            hom_new_coord = coords.homogeneous() @ self.__normalization_matrix
             new_coords.append(Coordinate(float(hom_new_coord[0]), float(hom_new_coord[1])))
 
         obj.norm_coords = new_coords
 
-        return
+        return new_coords

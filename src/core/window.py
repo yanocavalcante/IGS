@@ -92,15 +92,13 @@ class Window:
         if factor <= 0:
             raise ValueError("Zoom factor must be greater than zero")
 
-        center_x = (self.__xwmin + self.__xwmax) / 2
-        center_y = (self.__ywmin + self.__ywmax) / 2
         half_width = (self.width * factor) / 2
         half_height = (self.height * factor) / 2
 
-        self.__xwmin = center_x - half_width
-        self.__xwmax = center_x + half_width
-        self.__ywmin = center_y - half_height
-        self.__ywmax = center_y + half_height
+        self.__xwmin = self.center[0] - half_width
+        self.__xwmax = self.center[0] + half_width
+        self.__ywmin = self.center[1] - half_height
+        self.__ywmax = self.center[1] + half_height
 
     def rotate(self, factor: float) -> None:
         self.__angle += factor

@@ -100,10 +100,10 @@ class SGIInterface(QMainWindow):
         self.__controller.pan(PAN_STEP, 0)
 
     def __rotate_left(self) -> None:
-        self.__controller.rotate(ROTATION_FACTOR)
+        self.__controller.rotate(-ROTATION_FACTOR)
 
     def __rotate_right(self) -> None:
-        self.__controller.rotate(-ROTATION_FACTOR)
+        self.__controller.rotate(ROTATION_FACTOR)
 
     def __create_object(self) -> None:
         dialog = CreateObjectDialog(self)
