@@ -61,6 +61,10 @@ class SGIInterface(QMainWindow):
         self.__add_button(nav_layout, "Left", self.__move_left, 2, 0)
         self.__add_button(nav_layout, "Down", self.__move_down, 2, 1)
         self.__add_button(nav_layout, "Right", self.__move_right, 2, 2)
+        
+        self.angle_label = QLabel("Angle: 0°")
+        nav_layout.addWidget(self.angle_label)
+
         menu_layout.addLayout(nav_layout)
 
         menu_layout.addWidget(QLabel("Objects"))
@@ -100,10 +104,16 @@ class SGIInterface(QMainWindow):
         self.__controller.pan(PAN_STEP, 0)
 
     def __rotate_left(self) -> None:
-        self.__controller.rotate(-ROTATION_FACTOR)
+        self.__controller.rotate(+ROTATION_FACTOR)
+        self.angle_label.setText(
+            f"Angle: {self.__controller.window.angle:.0f}°"
+        )
 
     def __rotate_right(self) -> None:
-        self.__controller.rotate(ROTATION_FACTOR)
+        self.__controller.rotate(-ROTATION_FACTOR)
+        self.angle_label.setText(
+            f"Angle: {self.__controller.window.angle:.0f}°"
+        )
 
     def __create_object(self) -> None:
         dialog = CreateObjectDialog(self)
@@ -126,6 +136,9 @@ class SGIInterface(QMainWindow):
     def refresh_canvas(self) -> None:
         self.canvas.update()
         self.__refresh_object_list()
+
+    def refresh_window_angle(self):
+        print(self.__controller.window.angle)
 
     def __refresh_object_list(self) -> None:
         self.object_list.clear()

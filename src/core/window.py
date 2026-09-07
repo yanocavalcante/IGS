@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Window:
     def __init__(self, xwmin: float, ywmin: float, xwmax: float, ywmax: float) -> None:
         self.__xwmin = xwmin
@@ -82,11 +85,34 @@ class Window:
     def angle(self, value):
         self.__angle = value
 
+    @property
+    def vup(self):
+        angle = self.angle * (np.pi/180)
+
+        return np.array([
+            np.sin(angle),
+             np.cos(angle)
+        ])
+
+    @property
+    def vright(self):
+        angle = self.angle * (np.pi/180)
+
+        return np.array([
+            np.cos(angle),
+              -np.sin(angle)
+        ])
+
     def pan(self, dx: float, dy: float) -> None:
-        self.xwmin += dx
-        self.xwmax += dx
-        self.ywmin += dy
-        self.ywmax += dy
+        movement = dx * self.vright + dy * self.vup
+        print("Vright: ", self.vright)
+        print("Vup: ", self.vup)
+        print("Movement: ", movement)
+
+        self.xwmin += movement[0]
+        self.xwmax += movement[0]
+        self.ywmin += movement[1]
+        self.ywmax += movement[1]
 
     def zoom(self, factor: float) -> None:
         if factor <= 0:
