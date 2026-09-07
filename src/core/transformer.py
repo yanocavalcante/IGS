@@ -14,7 +14,7 @@ class Transformer:
         self.__normalization_matrix = value
 
     def update_normalization_matrix(self, window):
-        angle = -window.angle * (np.pi/180)
+        angle = window.angle * (np.pi/180)
         translation_norm_matrix = np.array([[1, 0, 0], [0, 1, 0], [-window.center[0], -window.center[1], 1]])
         rotation_norm_matrix = np.array([[np.cos(angle), np.sin(angle), 0],
                                          [-np.sin(angle), np.cos(angle), 0],
