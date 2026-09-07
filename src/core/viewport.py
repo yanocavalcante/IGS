@@ -34,10 +34,10 @@ class Viewport:
         return self.__yvpmax - self.__yvpmin
 
     def resize(self, width: float, height: float) -> None:
-        self.__xvpmin = 0
-        self.__yvpmin = 0
-        self.__xvpmax = width
-        self.__yvpmax = height
+        self.__xvpmin = 20
+        self.__yvpmin = 20
+        self.__xvpmax = width - 20
+        self.__yvpmax = height - 20
 
     def transform(self, coord: Coordinate, window: Window) -> Coordinate:
         xvp = ((coord.x - window.norm_xwmin) / 2) * (self.width)
