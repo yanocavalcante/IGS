@@ -2,6 +2,7 @@ from core.coordinate import Coordinate
 from core.viewport import Viewport
 from core.window import Window
 from core.transformer import Transformer
+from core.clipper import Clipper
 from models.display_file import DisplayFile
 from models.graphic_obj import GraphicObject
 from models.line import Line
@@ -25,6 +26,7 @@ class Controller:
         self.viewport = Viewport(0, 0, 600, 400)
         self.sgi = SGIInterface(self)
         self.transformer = Transformer(self.window)
+        self.clipper = Clipper()
         self.canvas = self.sgi.canvas
 
         self.testing()
@@ -74,12 +76,26 @@ class Controller:
         self.transformer.update_normalization_matrix(self.window)
 
     def get_drawable_objects(self) -> list[tuple[GraphicObject, list[Coordinate]]]:
+        '''
+        In the current implementation, we are considering all objects within
+        the Display File are Lines, obviously, that's not, usually, the case.
+        Therefore, every objects is clipped using C-H, so, it would brake if
+        it had to clip a wireframe, for example. 
+        '''
         return [
-            (obj, self.viewport.transform_all(self.transformer.normalize(obj), self.window)) for obj in self.display_file.objects
+            (obj,
+                self.viewport.transform_all(
+                    self.clipper.cohen_sutherland(self.transformer.normalize(obj)), self.window)
+            )
+            for obj in self.display_file.objects
         ]
 
     def testing(self):
-        self.add_object({"Name": "teste",
-                         "Type": "Wireframe",
-                         "Coords": [Coordinate(0,0), Coordinate(200, 200),
-                                                     Coordinate(400,0)]})
+        self.add_object({"Name": "teste0",
+                         "Type": "Line",
+                         "Coords": [Coordinate(0, 300), Coordinate(200, 300)]})
+
+        # self.add_object({"Name": "teste",
+        #                  "Type": "Wireframe",
+        #                  "Coords": [Coordinate(0,0), Coordinate(200, 200),
+        #                                              Coordinate(400,0)]})
