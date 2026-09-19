@@ -76,42 +76,29 @@ class Controller:
         self.transformer.update_normalization_matrix(self.window)
 
     def get_drawable_objects(self) -> list[tuple[GraphicObject, list[Coordinate]]]:
-        '''
-        In the current implementation, we are considering all objects within
-        the Display File are Lines, obviously, that's not, usually, the case.
-        Therefore, every objects is clipped using C-H, so, it would brake if
-        it had to clip a wireframe, for example. 
-        '''
-        corners = [
-            Coordinate(self.window.norm_xwmin, self.window.norm_ywmin),
-            Coordinate(self.window.norm_xwmin, self.window.norm_ywmax),
-            Coordinate(self.window.norm_xwmax, self.window.norm_ywmin),
-            Coordinate(self.window.norm_xwmax, self.window.norm_ywmax),
-        ]
+        drawable_objects = []
 
-        for corner in corners:
-            print(corner, "->", self.viewport.transform(corner, self.window))
+        for obj in self.display_file.objects:
+            clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
 
-        return [
-            (obj,
-                self.viewport.transform_all(
-                    self.clipper.cohen_sutherland(self.transformer.normalize(obj)), self.window)
-            )
-            for obj in self.display_file.objects
-        ]
+            if not clipped_coords:
+                continue
 
-        # return [(obj, self.viewport.transform_all([Coordinate(-0.9,0)], self.window)) for obj in self.display_file.objects]
+            for clipped_obj in clipped_coords:
+                drawable_objects.append((obj, self.viewport.transform_all(clipped_obj, self.window)))
+
+        return drawable_objects
 
     def testing(self):
         # self.add_object({"Name": "teste00",
         #                  "Type": "Point",
         #                  "Coords": [Coordinate(0, 300)]})
         
-        self.add_object({"Name": "teste0",
-                         "Type": "Line",
-                         "Coords": [Coordinate(0, 300), Coordinate(200, 300)]})
+        # self.add_object({"Name": "teste0",
+        #                  "Type": "Line",
+        #                  "Coords": [Coordinate(0, 300), Coordinate(200, 300)]})
 
-        # self.add_object({"Name": "teste",
-        #                  "Type": "Wireframe",
-        #                  "Coords": [Coordinate(0,0), Coordinate(200, 200),
-        #                                              Coordinate(400,0)]})
+        self.add_object({"Name": "teste",
+                         "Type": "Wireframe",
+                         "Coords": [Coordinate(0,0), Coordinate(200, 200),
+                                                     Coordinate(400,0)]})
