@@ -2,6 +2,7 @@ from core.coordinate import Coordinate
 from core.viewport import Viewport
 from core.window import Window
 from core.transformer import Transformer
+from core.clipper import Clipper
 from models.display_file import DisplayFile
 from models.graphic_obj import GraphicObject
 from models.line import Line
@@ -25,6 +26,7 @@ class Controller:
         self.viewport = Viewport(0, 0, 600, 400)
         self.sgi = SGIInterface(self)
         self.transformer = Transformer(self.window)
+        self.clipper = Clipper()
         self.canvas = self.sgi.canvas
 
         self.testing()
@@ -74,11 +76,28 @@ class Controller:
         self.transformer.update_normalization_matrix(self.window)
 
     def get_drawable_objects(self) -> list[tuple[GraphicObject, list[Coordinate]]]:
-        return [
-            (obj, self.viewport.transform_all(self.transformer.normalize(obj), self.window)) for obj in self.display_file.objects
-        ]
+        drawable_objects = []
+
+        for obj in self.display_file.objects:
+            clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
+
+            if not clipped_coords:
+                continue
+
+            for clipped_obj in clipped_coords:
+                drawable_objects.append((obj, self.viewport.transform_all(clipped_obj, self.window)))
+
+        return drawable_objects
 
     def testing(self):
+        # self.add_object({"Name": "teste00",
+        #                  "Type": "Point",
+        #                  "Coords": [Coordinate(0, 300)]})
+        
+        # self.add_object({"Name": "teste0",
+        #                  "Type": "Line",
+        #                  "Coords": [Coordinate(0, 300), Coordinate(200, 300)]})
+
         self.add_object({"Name": "teste",
                          "Type": "Wireframe",
                          "Coords": [Coordinate(0,0), Coordinate(200, 200),
