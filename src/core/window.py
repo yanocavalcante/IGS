@@ -105,9 +105,6 @@ class Window:
 
     def pan(self, dx: float, dy: float) -> None:
         movement = dx * self.vright + dy * self.vup
-        print("Vright: ", self.vright)
-        print("Vup: ", self.vup)
-        print("Movement: ", movement)
 
         self.xwmin += movement[0]
         self.xwmax += movement[0]

@@ -129,16 +129,12 @@ class SGIInterface(QMainWindow):
 
         dialog = TransformObjectDialog(current_obj.text(), self)
         transformation_dict = dialog.get_object_transformation_dict()
-        print(transformation_dict)
         if transformation_dict is not None:
             self.__controller.transform_object(transformation_dict)
 
     def refresh_canvas(self) -> None:
         self.canvas.update()
         self.__refresh_object_list()
-
-    def refresh_window_angle(self):
-        print(self.__controller.window.angle)
 
     def __refresh_object_list(self) -> None:
         self.object_list.clear()
