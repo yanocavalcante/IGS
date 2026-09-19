@@ -1,4 +1,5 @@
 from PyQt6.QtGui import QColor, QPainter, QPen
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget
 
 
@@ -11,7 +12,7 @@ class Canvas(QWidget):
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(200, 200, 200))
 
-        pen = QPen(QColor(200, 0, 0))
+        pen = QPen(Qt.GlobalColor.red)
         pen.setWidth(2)
         painter.setPen(pen)
 
