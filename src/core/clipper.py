@@ -29,7 +29,7 @@ class Clipper:
                 return [p1, p2]
 
             if (rc1 & rc2) != 0b0000:
-                return [Coordinate(0, 0), Coordinate(0, 0)]
+                return []
 
             if rc1 != 0b0000:
                 rc = rc1

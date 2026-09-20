@@ -8,5 +8,8 @@ class Line(GraphicObject):
         super().__init__(name, id, type, coords)
 
     def draw(self, painter, vp_coords: list[Coordinate]) -> None:
+        if len(vp_coords) < 2:
+            return
+
         p1, p2 = vp_coords[0], vp_coords[1]
         painter.drawLine(round(p1.x), round(p1.y), round(p2.x), round(p2.y))
