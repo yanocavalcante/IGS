@@ -9,6 +9,7 @@ from models.line import Line
 from models.obj_type import ObjectType
 from models.point import Point
 from models.wireframe import Wireframe
+from models.bezier_curve import BezierCurve
 from view.interface import SGIInterface
 
 
@@ -16,6 +17,7 @@ _TYPE_MAP: dict[str, tuple[type[GraphicObject], ObjectType]] = {
     "Point": (Point, ObjectType.POINT),
     "Line": (Line, ObjectType.LINE),
     "Wireframe": (Wireframe, ObjectType.WIREFRAME),
+    "Curve": (BezierCurve, ObjectType.CURVE)
 }
 
 
@@ -79,6 +81,10 @@ class Controller:
         drawable_objects = []
 
         for obj in self.display_file.objects:
+            if obj.type == ObjectType.CURVE:
+                drawable_objects.append((obj, self.viewport.transform_all(self.transformer.normalize(obj), self.window)))
+                continue
+
             clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
 
             if not clipped_coords:
@@ -98,7 +104,68 @@ class Controller:
         #                  "Type": "Line",
         #                  "Coords": [Coordinate(0, 300), Coordinate(200, 300)]})
 
+        # self.add_object({"Name": "teste",
+        #                  "Type": "Wireframe",
+        #                  "Coords": [Coordinate(0,0), Coordinate(200, 200),
+        #                                              Coordinate(400,0)]})
+
         self.add_object({"Name": "teste",
-                         "Type": "Wireframe",
-                         "Coords": [Coordinate(0,0), Coordinate(200, 200),
-                                                     Coordinate(400,0)]})
+                         "Type": "Curve",
+                         "Coords": [Coordinate(100, 100), Coordinate(200, 200),
+                                                     Coordinate(300, 200), Coordinate(400, 100)]})
+        
+        #self.yano()
+
+    def yano(self):
+
+        self.add_object({"Name": "Y1",
+                        "Type": "Line",
+                        "Coords": [Coordinate(0, 300), Coordinate(50, 200)]})
+
+        self.add_object({"Name": "Y2",
+                        "Type": "Line",
+                        "Coords": [Coordinate(100, 300), Coordinate(50, 200)]})
+
+        self.add_object({"Name": "Y3",
+                        "Type": "Line",
+                        "Coords": [Coordinate(50, 200), Coordinate(50, 100)]})
+
+        self.add_object({"Name": "A1",
+                        "Type": "Line",
+                        "Coords": [Coordinate(140, 100), Coordinate(190, 300)]})
+
+        self.add_object({"Name": "A2",
+                        "Type": "Line",
+                        "Coords": [Coordinate(190, 300), Coordinate(240, 100)]})
+
+        self.add_object({"Name": "A3",
+                        "Type": "Line",
+                        "Coords": [Coordinate(165, 180), Coordinate(215, 180)]})
+
+        self.add_object({"Name": "N1",
+                        "Type": "Line",
+                        "Coords": [Coordinate(280, 100), Coordinate(280, 300)]})
+
+        self.add_object({"Name": "N2",
+                        "Type": "Line",
+                        "Coords": [Coordinate(280, 300), Coordinate(380, 100)]})
+
+        self.add_object({"Name": "N3",
+                        "Type": "Line",
+                        "Coords": [Coordinate(380, 100), Coordinate(380, 300)]})
+
+        self.add_object({"Name": "O1",
+                        "Type": "Line",
+                        "Coords": [Coordinate(420, 105), Coordinate(420, 295)]})
+
+        self.add_object({"Name": "O2",
+                        "Type": "Line",
+                        "Coords": [Coordinate(420, 295), Coordinate(520, 295)]})
+
+        self.add_object({"Name": "O3",
+                        "Type": "Line",
+                        "Coords": [Coordinate(520, 295), Coordinate(520, 105)]})
+
+        self.add_object({"Name": "O4",
+                        "Type": "Line",
+                        "Coords": [Coordinate(520, 105), Coordinate(420, 105)]})
