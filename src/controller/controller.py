@@ -82,10 +82,9 @@ class Controller:
 
         for obj in self.display_file.objects:
             if obj.type == ObjectType.CURVE:
-                drawable_objects.append((obj, self.viewport.transform_all(self.transformer.normalize(obj), self.window)))
-                continue
-
-            clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
+                clipped_coords = [self.clipper.point_clipping(self.transformer.normalize(obj))]
+            else:
+                clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
 
             if not clipped_coords:
                 continue
@@ -96,25 +95,25 @@ class Controller:
         return drawable_objects
 
     def testing(self):
-        # self.add_object({"Name": "teste00",
+        # self.add_object({"Name": "Point",
         #                  "Type": "Point",
         #                  "Coords": [Coordinate(0, 300)]})
         
-        # self.add_object({"Name": "teste0",
+        # self.add_object({"Name": "Line",
         #                  "Type": "Line",
         #                  "Coords": [Coordinate(0, 300), Coordinate(200, 300)]})
 
-        # self.add_object({"Name": "teste",
-        #                  "Type": "Wireframe",
-        #                  "Coords": [Coordinate(0,0), Coordinate(200, 200),
-        #                                              Coordinate(400,0)]})
+        self.add_object({"Name": "Isosceles",
+                         "Type": "Wireframe",
+                         "Coords": [Coordinate(0,0), Coordinate(200, 200),
+                                                     Coordinate(400,0)]})
 
-        self.add_object({"Name": "teste",
+        self.add_object({"Name": "Bézier",
                          "Type": "Curve",
                          "Coords": [Coordinate(100, 100), Coordinate(200, 200),
                                                      Coordinate(300, 200), Coordinate(400, 100)]})
         
-        #self.yano()
+        # self.yano()
 
     def yano(self):
 

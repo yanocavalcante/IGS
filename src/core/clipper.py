@@ -9,14 +9,23 @@ class Clipper:
             Coordinate(1, 1),
             Coordinate(-1, 1)
         ]
+        self.__epsilon = 1e-7
+
     def clipping(self, coords) -> list[list[Coordinate]]:
         match len(coords):
             case(1):
-                return [coords]
+                return [self.point_clipping(coords)]
             case(2):
                 return [self.cohen_sutherland(coords)]
             case _:
                 return self.weiler_atherton(coords)
+
+    def point_clipping(self, coords) -> list[Coordinate]:
+        return [
+            coord for coord in coords
+            if -1.0 <= coord.x <= 1.0
+            and -1.0 <= coord.y <= 1.0
+        ]
 
     def cohen_sutherland(self, coords) -> list[Coordinate]:
         p1, p2 = coords
@@ -79,9 +88,9 @@ class Clipper:
         if n_obj < 3:
             return []
 
-        # ---------------------------------------------------------
-        # 1. Encontrar todas as interseções entre OBJ e CLIP
-        # ---------------------------------------------------------
+        '''
+        Finds intersections between OBJ and CLIP
+        '''
 
         intersections = []
 
@@ -104,21 +113,15 @@ class Clipper:
                     "clip_node": None
                 })
 
-        # ---------------------------------------------------------
-        # 2. Função para verificar se um ponto está dentro da Window
-        # ---------------------------------------------------------
-
         def inside_window(point: Coordinate) -> bool:
             return (
                 -1 <= point.x <= 1 and
                 -1 <= point.y <= 1
             )
 
-        # ---------------------------------------------------------
-        # 3. Classificar as interseções como entrada ou saída
-        # ---------------------------------------------------------
-
-        epsilon = 1e-7
+        '''
+        Categorize between ENTRANCE or EXIT
+        '''
 
         for intersection in intersections:
             edge = intersection["obj_edge"]
@@ -127,8 +130,8 @@ class Clipper:
             p1 = obj[edge]
             p2 = obj[(edge + 1) % n_obj]
 
-            t_before = max(0.0, t - epsilon)
-            t_after = min(1.0, t + epsilon)
+            t_before = max(0.0, t - self.__epsilon)
+            t_after = min(1.0, t + self.__epsilon)
 
             before = Coordinate(
                 p1.x + t_before * (p2.x - p1.x),
@@ -149,9 +152,9 @@ class Clipper:
             elif inside_before and not inside_after:
                 intersection["entry"] = False
 
-        # ---------------------------------------------------------
-        # 4. Organizar as interseções por aresta
-        # ---------------------------------------------------------
+        '''
+        Organize intersections for each edge
+        '''
 
         obj_intersections = [[] for _ in range(n_obj)]
         clip_intersections = [[] for _ in range(n_clip)]
@@ -166,9 +169,9 @@ class Clipper:
         for edge_intersections in clip_intersections:
             edge_intersections.sort(key=lambda x: x["t_clip"])
 
-        # ---------------------------------------------------------
-        # 5. Construir a lista OBJ com as interseções inseridas
-        # ---------------------------------------------------------
+        '''
+        Rebuild OBJ with new intersections
+        '''
 
         obj_nodes = []
 
@@ -193,9 +196,9 @@ class Clipper:
                 intersection["obj_node"] = node
                 obj_nodes.append(node)
 
-        # ---------------------------------------------------------
-        # 6. Construir a lista CLIP com as interseções inseridas
-        # ---------------------------------------------------------
+        '''
+        Rebuild CLIP with new intersections
+        '''
 
         clip_nodes = []
 
@@ -220,9 +223,9 @@ class Clipper:
                 intersection["clip_node"] = node
                 clip_nodes.append(node)
 
-        # ---------------------------------------------------------
-        # 7. Conectar as interseções correspondentes
-        # ---------------------------------------------------------
+        '''
+        Connect the found intersections
+        '''
 
         for intersection in intersections:
             obj_node = intersection["obj_node"]
@@ -231,9 +234,9 @@ class Clipper:
             obj_node["neighbor"] = clip_node
             clip_node["neighbor"] = obj_node
 
-        # ---------------------------------------------------------
-        # 8. Casos sem interseção
-        # ---------------------------------------------------------
+        '''
+        Cover cases without intersections
+        '''
 
         if not intersections:
             if all(inside_window(point) for point in obj):
@@ -244,9 +247,9 @@ class Clipper:
 
             return []
 
-        # ---------------------------------------------------------
-        # 9. Determinar a direção de percurso da CLIP
-        # ---------------------------------------------------------
+        '''
+        Determine direction of list CLIP stepping
+        '''
 
         def polygon_area(points: list[Coordinate]) -> float:
             area = 0.0
@@ -267,9 +270,9 @@ class Clipper:
         else:
             clip_step = -1
 
-        # ---------------------------------------------------------
-        # 10. Índices para percorrer circularmente as listas
-        # ---------------------------------------------------------
+        '''
+        Indexing for CLIP and OBJ
+        '''
 
         obj_index = {
             id(node): i
@@ -281,9 +284,9 @@ class Clipper:
             for i, node in enumerate(clip_nodes)
         }
 
-        # ---------------------------------------------------------
-        # 11. Reconstruir os polígonos resultantes
-        # ---------------------------------------------------------
+        '''
+        Rebuild new polygons
+        '''
 
         result = []
 
@@ -308,11 +311,6 @@ class Clipper:
             polygon.append(start["coord"])
 
             while True:
-
-                # ---------------------------------------------
-                # Percorrendo OBJ
-                # ---------------------------------------------
-
                 if mode == "obj":
                     index = obj_index[id(current)]
                     next_index = (index + 1) % len(obj_nodes)
@@ -327,14 +325,9 @@ class Clipper:
                     if current["intersection"]:
                         current["event"]["visited"] = True
 
-                        # Saída: trocar OBJ por CLIP
                         if not current["entry"]:
                             current = current["neighbor"]
                             mode = "clip"
-
-                # ---------------------------------------------
-                # Percorrendo CLIP
-                # ---------------------------------------------
 
                 else:
                     index = clip_index[id(current)]
@@ -350,7 +343,6 @@ class Clipper:
                     if current["intersection"]:
                         current["event"]["visited"] = True
 
-                        # Entrada: voltar para OBJ
                         if current["entry"]:
                             current = current["neighbor"]
                             mode = "obj"
@@ -390,35 +382,33 @@ class Clipper:
         return inside
 
     def __point_on_segment(self, point: Coordinate, p1: Coordinate,
-                           p2: Coordinate, epsilon: float = 1e-7) -> bool:
+                           p2: Coordinate) -> bool:
         cross = (point.y - p1.y) * (p2.x - p1.x) - (point.x - p1.x) * (p2.y - p1.y)
 
-        if abs(cross) > epsilon:
+        if abs(cross) > self.__epsilon:
             return False
 
         return (
-            min(p1.x, p2.x) - epsilon <= point.x <= max(p1.x, p2.x) + epsilon and
-            min(p1.y, p2.y) - epsilon <= point.y <= max(p1.y, p2.y) + epsilon
+            min(p1.x, p2.x) - self.__epsilon <= point.x <= max(p1.x, p2.x) + self.__epsilon and
+            min(p1.y, p2.y) - self.__epsilon <= point.y <= max(p1.y, p2.y) + self.__epsilon
         )
 
-    def __remove_repeated_points(self, points: list[Coordinate],
-                                 epsilon: float = 1e-7) -> list[Coordinate]:
+    def __remove_repeated_points(self, points: list[Coordinate]) -> list[Coordinate]:
         clean_points = []
 
         for point in points:
-            if clean_points and self.__same_point(clean_points[-1], point, epsilon):
+            if clean_points and self.__same_point(clean_points[-1], point):
                 continue
 
             clean_points.append(point)
 
-        if len(clean_points) > 1 and self.__same_point(clean_points[0], clean_points[-1], epsilon):
+        if len(clean_points) > 1 and self.__same_point(clean_points[0], clean_points[-1]):
             clean_points.pop()
 
         return clean_points
 
-    def __same_point(self, p1: Coordinate, p2: Coordinate,
-                     epsilon: float = 1e-7) -> bool:
-        return abs(p1.x - p2.x) <= epsilon and abs(p1.y - p2.y) <= epsilon
+    def __same_point(self, p1: Coordinate, p2: Coordinate) -> bool:
+        return abs(p1.x - p2.x) <= self.__epsilon and abs(p1.y - p2.y) <= self.__epsilon
 
     def __calculate_intersection(self, p1, p2, w1, w2):
         '''
