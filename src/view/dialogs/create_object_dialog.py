@@ -11,11 +11,13 @@ from PyQt6.QtWidgets import (
 from view.dialogs.line_dialog import LineDialog
 from view.dialogs.point_dialog import PointDialog
 from view.dialogs.wireframe_dialog import WireframeDialog
+from view.dialogs.curve_dialog import CurveDialog
 
 _COORD_DIALOGS = {
     "Point": PointDialog,
     "Line": LineDialog,
     "Wireframe": WireframeDialog,
+    "Curve": CurveDialog,
 }
 
 class CreateObjectDialog(QDialog):
