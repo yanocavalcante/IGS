@@ -40,11 +40,13 @@ Por fim, com os pacotes instalados, basta executar o arquivo principal presente 
 python3 main.py
 ```
 
-## Fluxos
+Alternativamente, o *script* `run.sh` permite a execução de todos esses passos, de maneira automática:
 
-### Criação de Novos Objetos
+```bash
+chmod +x run.sh
 
-![Diagrama de Fluxo da Criação de Novos Objetos](assets/sgi_obj_creation_flux_v1.png)
+./run.sh
+```
 
 ## Autores
 
