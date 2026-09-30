@@ -84,7 +84,7 @@ class Controller:
 
         for obj in self.display_file.objects:
             if obj.type in (ObjectType.CURVE, ObjectType.BSPLINE):
-                clipped_coords = [self.clipper.point_clipping(self.transformer.normalize(obj))]
+                clipped_coords = self.__clip_curve(self.transformer.normalize(obj))
             else:
                 clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
 
@@ -95,6 +95,26 @@ class Controller:
                 drawable_objects.append((obj, self.viewport.transform_all(clipped_obj, self.window)))
 
         return drawable_objects
+
+    def __clip_curve(self, coords: list[Coordinate]) -> list[list[Coordinate]]:
+        """Clips a curve (polyline) segment by segment.
+
+        Returns one polyline per visible stretch, so a curve leaving and
+        re-entering the window is not joined by a spurious straight line.
+        """
+        runs: list[list[Coordinate]] = []
+
+        for p1, p2 in zip(coords, coords[1:]):
+            piece = self.clipper.cohen_sutherland([p1, p2])
+            if not piece:
+                continue
+
+            if runs and runs[-1][-1] == piece[0]:
+                runs[-1].append(piece[1])
+            else:
+                runs.append(list(piece))
+
+        return runs
 
     def testing(self):
         # self.add_object({"Name": "Point",

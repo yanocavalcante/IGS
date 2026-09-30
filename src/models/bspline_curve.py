@@ -22,6 +22,9 @@ class BSplineCurve(GraphicObject):
     _DELTA = 0.01
 
     def __init__(self, name: str, id: int, type: ObjectType, coords: list[Coordinate]) -> None:
+        if len(coords) < 4:
+            raise ValueError("A B-Spline needs, at least, 4 control points.")
+
         super().__init__(name, id, type, coords)
         self.__control_coords = coords
         self.forward_differences()

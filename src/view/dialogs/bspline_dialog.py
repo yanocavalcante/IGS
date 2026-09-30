@@ -69,7 +69,10 @@ class BSplineDialog(QDialog):
         pattern = r"\(\s*([-+]?\d*\.?\d+)\s*,\s*([-+]?\d*\.?\d+)\s*\)"
         matches = re.findall(pattern, text)
 
-        if not matches:
+        # Anything left besides separators means a malformed point: reject it
+        # instead of silently dropping points.
+        leftover = re.sub(pattern, "", text)
+        if not matches or re.sub(r"[\s,;]", "", leftover):
             raise ValueError("Invalid format. Use (x1,y1),(x2,y2),...")
 
         return [Coordinate(float(x), float(y)) for x, y in matches]

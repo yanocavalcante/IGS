@@ -1,0 +1,81 @@
+diff --git a/requirements.txt b/requirements.txt
+index 889ce384216f7ad554f760523aecb11228b50fbe..2a5f0c7d919a7d6239fe63952fe5f5f90b070c37 100644
+GIT binary patch
+literal 138
+zcmezWFOQ*=A(x?mp_0KC2#px@7)*iKh=G@Ziy;6g8pu$>U<Q^m1Bx30p&o+)nyfBX
+bRfcG);u(q=GJ!UM>@j382Ac-54`Lbs@XHe`
+
+literal 63
+zcmc~R%`K?3wKdW+(lg@<s0=JIv$ZwTGc?pQfbet?B8Cu=_~Oh0TU$e8Jwqcs0{}5%
+B5b*#2
+
+diff --git a/src/controller/controller.py b/src/controller/controller.py
+index 364d4bb..ba2c9b4 100644
+--- a/src/controller/controller.py
++++ b/src/controller/controller.py
+@@ -84,7 +84,7 @@ class Controller:
+ 
+         for obj in self.display_file.objects:
+             if obj.type in (ObjectType.CURVE, ObjectType.BSPLINE):
+-                clipped_coords = [self.clipper.point_clipping(self.transformer.normalize(obj))]
++                clipped_coords = self.__clip_curve(self.transformer.normalize(obj))
+             else:
+                 clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
+ 
+@@ -96,6 +96,26 @@ class Controller:
+ 
+         return drawable_objects
+ 
++    def __clip_curve(self, coords: list[Coordinate]) -> list[list[Coordinate]]:
++        """Clips a curve (polyline) segment by segment.
++
++        Returns one polyline per visible stretch, so a curve leaving and
++        re-entering the window is not joined by a spurious straight line.
++        """
++        runs: list[list[Coordinate]] = []
++
++        for p1, p2 in zip(coords, coords[1:]):
++            piece = self.clipper.cohen_sutherland([p1, p2])
++            if not piece:
++                continue
++
++            if runs and runs[-1][-1] == piece[0]:
++                runs[-1].append(piece[1])
++            else:
++                runs.append(list(piece))
++
++        return runs
++
+     def testing(self):
+         # self.add_object({"Name": "Point",
+         #                  "Type": "Point",
+diff --git a/src/models/bspline_curve.py b/src/models/bspline_curve.py
+index baedb6e..ba61058 100644
+--- a/src/models/bspline_curve.py
++++ b/src/models/bspline_curve.py
+@@ -22,6 +22,9 @@ class BSplineCurve(GraphicObject):
+     _DELTA = 0.01
+ 
+     def __init__(self, name: str, id: int, type: ObjectType, coords: list[Coordinate]) -> None:
++        if len(coords) < 4:
++            raise ValueError("A B-Spline needs, at least, 4 control points.")
++
+         super().__init__(name, id, type, coords)
+         self.__control_coords = coords
+         self.forward_differences()
+diff --git a/src/view/dialogs/bspline_dialog.py b/src/view/dialogs/bspline_dialog.py
+index 462cd1a..91dfd8d 100644
+--- a/src/view/dialogs/bspline_dialog.py
++++ b/src/view/dialogs/bspline_dialog.py
+@@ -69,7 +69,10 @@ class BSplineDialog(QDialog):
+         pattern = r"\(\s*([-+]?\d*\.?\d+)\s*,\s*([-+]?\d*\.?\d+)\s*\)"
+         matches = re.findall(pattern, text)
+ 
+-        if not matches:
++        # Anything left besides separators means a malformed point: reject it
++        # instead of silently dropping points.
++        leftover = re.sub(pattern, "", text)
++        if not matches or re.sub(r"[\s,;]", "", leftover):
+             raise ValueError("Invalid format. Use (x1,y1),(x2,y2),...")
+ 
+         return [Coordinate(float(x), float(y)) for x, y in matches]
