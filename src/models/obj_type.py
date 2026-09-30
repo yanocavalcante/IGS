@@ -6,3 +6,4 @@ class ObjectType(Enum):
     LINE = 2
     WIREFRAME = 3
     CURVE = 4
+    BSPLINE = 5

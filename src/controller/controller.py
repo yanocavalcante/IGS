@@ -10,6 +10,7 @@ from models.obj_type import ObjectType
 from models.point import Point
 from models.wireframe import Wireframe
 from models.bezier_curve import BezierCurve
+from models.bspline_curve import BSplineCurve
 from view.interface import SGIInterface
 
 
@@ -17,7 +18,8 @@ _TYPE_MAP: dict[str, tuple[type[GraphicObject], ObjectType]] = {
     "Point": (Point, ObjectType.POINT),
     "Line": (Line, ObjectType.LINE),
     "Wireframe": (Wireframe, ObjectType.WIREFRAME),
-    "Curve": (BezierCurve, ObjectType.CURVE)
+    "Curve": (BezierCurve, ObjectType.CURVE),
+    "B-Spline": (BSplineCurve, ObjectType.BSPLINE)
 }
 
 
@@ -81,7 +83,7 @@ class Controller:
         drawable_objects = []
 
         for obj in self.display_file.objects:
-            if obj.type == ObjectType.CURVE:
+            if obj.type in (ObjectType.CURVE, ObjectType.BSPLINE):
                 clipped_coords = [self.clipper.point_clipping(self.transformer.normalize(obj))]
             else:
                 clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
@@ -112,6 +114,12 @@ class Controller:
                          "Type": "Curve",
                          "Coords": [Coordinate(100, 100), Coordinate(200, 200),
                                                      Coordinate(300, 200), Coordinate(400, 100)]})
+
+        self.add_object({"Name": "B-Spline",
+                         "Type": "B-Spline",
+                         "Coords": [Coordinate(100, 50), Coordinate(160, 200),
+                                                     Coordinate(240, 200), Coordinate(300, 50),
+                                                     Coordinate(380, 180), Coordinate(460, 80)]})
         
         # self.yano()
 
