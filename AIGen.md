@@ -10,6 +10,14 @@ Apontamentos para os pedaços de código do SGI que foram sintetizados a partir 
 
 Os métodos privados auxiliares da classe `Clipper`, `__find_intersections()`, `__point_inside_polygon()`, `__point_on_segment()` e `__segment_intersection()` foram criados com o auxílio de Inteligência Artificial.
 
+### ./src/models/bspline_curve.py
+
+A classe `BSplineCurve` (modelo de curva B-Spline cúbica uniforme rasterizada por *Forward Differences*), incluindo o método `forward_differences()` e o método privado `__fwd_diff()`, foi implementada com o auxílio de Inteligência Artificial.
+
+### ./src/view/dialogs/bspline_dialog.py
+
+A classe `BSplineDialog`, incluindo o método privado `__parse()`, responsável pela entrada de pontos de controle no padrão `(x1,y1),(x2,y2),...`, foi implementada com o auxílio de Inteligência Artificial.
+
 ## Diretrizes INE5420 - Computação Gráfica
 
 Diretrizes redigidas pelo Prof. Dr. rer.nat. Aldo von Wangenheim para a documentação do uso de Inteligência Artificial Generativa (IAGen) na confecção do primeiro trabalho da disciplina INE5420 - Computação Gráfica.

@@ -12,12 +12,14 @@ from view.dialogs.line_dialog import LineDialog
 from view.dialogs.point_dialog import PointDialog
 from view.dialogs.wireframe_dialog import WireframeDialog
 from view.dialogs.curve_dialog import CurveDialog
+from view.dialogs.bspline_dialog import BSplineDialog
 
 _COORD_DIALOGS = {
     "Point": PointDialog,
     "Line": LineDialog,
     "Wireframe": WireframeDialog,
     "Curve": CurveDialog,
+    "B-Spline": BSplineDialog,
 }
 
 class CreateObjectDialog(QDialog):
