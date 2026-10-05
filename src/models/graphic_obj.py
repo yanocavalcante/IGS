@@ -1,16 +1,19 @@
 from abc import ABC, abstractmethod
 from core.coordinate import Coordinate
 from models.obj_type import ObjectType
+from models.basics.vertex import Vertex
 
 
 class GraphicObject(ABC):
     @abstractmethod
-    def __init__(self, name: str, id: int, type: ObjectType, coords: list[Coordinate]) -> None:
+    def __init__(self, name: str, id: int, type: ObjectType, vertexes: list[Vertex]) -> None:
         self.__name = name
         self.__id = id
         self.__type = type
-        self.__coords = coords
-        self.__norm_coords = coords
+        self.__vertexes = vertexes
+        self.__norm_coords = vertexes
+        self.__edges = []
+        self.__faces = []
 
     @property
     def name(self) -> str:
@@ -25,20 +28,28 @@ class GraphicObject(ABC):
         return self.__type
 
     @property
-    def coords(self) -> list[Coordinate]:
-        return self.__coords
+    def vertexes(self) -> list[Vertex]:
+        return self.__vertexes
 
-    @coords.setter
-    def coords(self, coords):
-        self.__coords = coords
+    @vertexes.setter
+    def vertexes(self, vertexes):
+        self.__vertexes = vertexes
 
     @property
-    def norm_coords(self) -> list[Coordinate]:
+    def norm_coords(self):
         return self.__norm_coords
 
     @norm_coords.setter
     def norm_coords(self, norm_coords):
         self.__norm_coords = norm_coords
+
+    @property
+    def edges(self):
+        return self.__edges
+
+    @property
+    def faces(self):
+        return self.__faces
 
     @abstractmethod
     def draw(self, painter, vp_coords: list[Coordinate]) -> None:
@@ -47,12 +58,12 @@ class GraphicObject(ABC):
     def center(self):
         sumX = 0
         sumY = 0
-        for coord in self.coords:
-            sumX += coord.x
-            sumY += coord.y
+        for vertex in self.vertexes:
+            sumX += vertex.x
+            sumY += vertex.y
 
-        cx = sumX / len(self.coords)
-        cy = sumY / len(self.coords)
+        cx = sumX / len(self.vertexes)
+        cy = sumY / len(self.vertexes)
 
         return cx, cy
 

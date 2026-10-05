@@ -1,11 +1,12 @@
 from core.coordinate import Coordinate
 from models.graphic_obj import GraphicObject
 from models.obj_type import ObjectType
+from models.basics.vertex import Vertex
 
 
 class Line(GraphicObject):
-    def __init__(self, name: str, id: int, type: ObjectType, coords: list[Coordinate]):
-        super().__init__(name, id, type, coords)
+    def __init__(self, name: str, id: int, type: ObjectType, vertexes: list[Vertex]):
+        super().__init__(name, id, type, vertexes)
 
     def draw(self, painter, vp_coords: list[Coordinate]) -> None:
         if len(vp_coords) < 2:
