@@ -1,4 +1,5 @@
-from core.coordinate import Coordinate
+from models.basics.coordinate import Coordinate
+from models.basics.vertex import Vertex
 from models.graphic_obj import GraphicObject
 from models.obj_type import ObjectType
 from PyQt6.QtGui import QPolygonF, QBrush
@@ -6,9 +7,9 @@ from PyQt6.QtCore import QPointF, Qt
 
 
 class Wireframe(GraphicObject):
-    def __init__(self, name: str, id: int, type: ObjectType, coords: list[Coordinate],
+    def __init__(self, name: str, id: int, type: ObjectType, vertexes: list[Vertex],
                  closed: bool = True, filled: bool = False):
-        super().__init__(name, id, type, coords)
+        super().__init__(name, id, type, vertexes)
         self.__closed = closed
         self.__filled = filled
 

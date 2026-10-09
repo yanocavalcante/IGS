@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QVBoxLayout,
 )
-from core.coordinate import Coordinate
 
 
 class WireframeDialog(QDialog):
@@ -32,7 +31,7 @@ class WireframeDialog(QDialog):
         layout.addLayout(form)
         layout.addWidget(buttons)
 
-        self.__coords: list[Coordinate] = []
+        self.__coords: list[list] = []
 
     def __try_accept(self) -> None:
         try:
@@ -45,14 +44,14 @@ class WireframeDialog(QDialog):
             QMessageBox.warning(self, "Invalid input", str(e))
 
     @staticmethod
-    def __parse(text: str) -> list[Coordinate]:
+    def __parse(text: str) -> list[list]:
         points = []
         for chunk in text.split(";"):
             chunk = chunk.strip()
             if not chunk:
                 continue
             x_str, y_str = chunk.split(",")
-            points.append(Coordinate(float(x_str), float(y_str)))
+            points.append([float(x_str), float(y_str)])
         return points
 
     def get_coords(self) -> list[Coordinate]:

@@ -1,4 +1,4 @@
-from core.coordinate import Coordinate
+from models.basics.coordinate import Coordinate
 
 
 class Clipper:

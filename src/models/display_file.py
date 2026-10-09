@@ -1,4 +1,4 @@
-from core.coordinate import Coordinate
+from models.basics.coordinate import Coordinate
 from models.graphic_obj import GraphicObject
 from models.obj_type import ObjectType
 

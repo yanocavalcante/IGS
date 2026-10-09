@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from core.coordinate import Coordinate
+from models.basics.coordinate import Coordinate
 from models.obj_type import ObjectType
 from models.basics.vertex import Vertex
 

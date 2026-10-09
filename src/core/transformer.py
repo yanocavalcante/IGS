@@ -1,5 +1,5 @@
 import numpy as np
-from .coordinate import Coordinate
+from ..models.basics.coordinate import Coordinate
 
 class Transformer:
     def __init__(self, window):
@@ -24,8 +24,8 @@ class Transformer:
         self.__normalization_matrix = translation_norm_matrix @ rotation_norm_matrix @ scaling_norm_matrix
         return self.__normalization_matrix
 
-    def translate(self, obj, dx, dy):
-        matrix = np.array([[1, 0, 0], [0, 1, 0], [dx, dy, 1]])
+    def translate(self, obj, dx, dy, dz):
+        matrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [dx, dy, dz, 1]])
         new_coords = []
         for coords in obj.coords:
             hom_new_coord = coords.homogeneous() @ matrix
@@ -68,13 +68,13 @@ class Transformer:
 
         return
 
-    def scale(self, obj, sx, sy):
+    def scale(self, obj, sx, sy, sz):
         # Should/Could we use the function 'translate' to do parts of it?
-        cx, cy = obj.center()
+        cx, cy, cz = obj.center()
 
-        origin_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [-cx, -cy, 1]])
-        scale_matrix = np.array([[sx, 0, 0], [0, sy, 0], [0, 0, 1]])
-        center_trans_matrix = np.array([[1, 0, 0], [0, 1, 0], [cx, cy, 1]])
+        origin_trans_matrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [-cx, -cy, -cz, 1]])
+        scale_matrix = np.array([[sx, 0, 0, 0], [0, sy, 0, 0], [0, 0, sz, 0], [0, 0, 0, 1]])
+        center_trans_matrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [cx, cy, cz, 1]])
 
         new_coords = []
         for coords in obj.coords:

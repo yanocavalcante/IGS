@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QVBoxLayout,
 )
-from core.coordinate import Coordinate
+from models.basics.coordinate import Coordinate
 
 
 class BSplineDialog(QDialog):

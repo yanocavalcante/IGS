@@ -1,8 +1,9 @@
-from core.coordinate import Coordinate
+from models.basics.coordinate import Coordinate
 from core.viewport import Viewport
 from core.window import Window
 from core.transformer import Transformer
 from core.clipper import Clipper
+from models.basics.vertex import Vertex
 from models.display_file import DisplayFile
 from models.graphic_obj import GraphicObject
 from models.line import Line
@@ -15,6 +16,7 @@ from view.interface import SGIInterface
 
 
 _TYPE_MAP: dict[str, tuple[type[GraphicObject], ObjectType]] = {
+    "Window": (Window, ObjectType.WINDOW),
     "Point": (Point, ObjectType.POINT),
     "Line": (Line, ObjectType.LINE),
     "Wireframe": (Wireframe, ObjectType.WIREFRAME),
@@ -26,7 +28,7 @@ _TYPE_MAP: dict[str, tuple[type[GraphicObject], ObjectType]] = {
 class Controller:
     def __init__(self) -> None:
         self.display_file = DisplayFile()
-        self.window = Window(0, 0, 600, 400)
+        self.__create_window()
         self.viewport = Viewport(0, 0, 600, 400)
         self.sgi = SGIInterface(self)
         self.transformer = Transformer(self.window)
@@ -48,11 +50,11 @@ class Controller:
         object_id = int(transformation_dict["object"].split(" - ", 1)[0])
         match transformation_dict["operation"]:
             case("translation"):
-                self.transformer.translate(self.display_file.get_by_id(object_id), transformation_dict["dx"], transformation_dict["dy"])
+                self.transformer.translate(self.display_file.get_by_id(object_id), transformation_dict["dx"], transformation_dict["dy"], transformation_dict["dz"])
             case("rotation"):
                 self.transformer.rotate(self.display_file.get_by_id(object_id), transformation_dict["angle"], transformation_dict["center"])
             case("scaling"):
-                self.transformer.scale(self.display_file.get_by_id(object_id), transformation_dict["sx"], transformation_dict["sy"])
+                self.transformer.scale(self.display_file.get_by_id(object_id), transformation_dict["sx"], transformation_dict["sy"], transformation_dict["sz"])
         self.transformer.update_normalization_matrix(self.window)
         self.sgi.refresh_canvas()
 
@@ -116,83 +118,93 @@ class Controller:
 
         return runs
 
+    def __create_window(self):
+        window_vertexes = [Vertex(Coordinate(0, 0, 0)),
+                               Vertex(Coordinate(600, 0, 0)),
+                               Vertex(Coordinate(600, 400, 0)),
+                               Vertex(Coordinate(0, 400, 0))]
+        self.window = Window("Window", 0, ObjectType.WINDOW, window_vertexes)
+
+    def __create_viewport(self):
+        pass
+
     def testing(self):
-        # self.add_object({"Name": "Point",
-        #                  "Type": "Point",
-        #                  "Coords": [Coordinate(0, 300)]})
+        self.add_object({"Name": "Point",
+                         "Type": "Point",
+                         "Coords": [Coordinate(0, 300, 0)]})
         
         # self.add_object({"Name": "Line",
         #                  "Type": "Line",
         #                  "Coords": [Coordinate(0, 300), Coordinate(200, 300)]})
 
-        self.add_object({"Name": "Isosceles",
-                         "Type": "Wireframe",
-                         "Coords": [Coordinate(0,0), Coordinate(200, 200),
-                                                     Coordinate(400,0)]})
+        # self.add_object({"Name": "Isosceles",
+        #                  "Type": "Wireframe",
+        #                  "Coords": [Coordinate(0,0), Coordinate(200, 200),
+        #                                              Coordinate(400,0)]})
 
-        self.add_object({"Name": "Bézier",
-                         "Type": "Curve",
-                         "Coords": [Coordinate(100, 100), Coordinate(200, 200),
-                                                     Coordinate(300, 200), Coordinate(400, 100)]})
+        # self.add_object({"Name": "Bézier",
+        #                  "Type": "Curve",
+        #                  "Coords": [Coordinate(100, 100), Coordinate(200, 200),
+        #                                              Coordinate(300, 200), Coordinate(400, 100)]})
 
-        self.add_object({"Name": "B-Spline",
-                         "Type": "B-Spline",
-                         "Coords": [Coordinate(100, 50), Coordinate(160, 200),
-                                                     Coordinate(240, 200), Coordinate(300, 50),
-                                                     Coordinate(380, 180), Coordinate(460, 80)]})
+        # self.add_object({"Name": "B-Spline",
+        #                  "Type": "B-Spline",
+        #                  "Coords": [Coordinate(100, 50), Coordinate(160, 200),
+        #                                              Coordinate(240, 200), Coordinate(300, 50),
+        #                                              Coordinate(380, 180), Coordinate(460, 80)]})
         
         # self.yano()
 
-    def yano(self):
+    # def yano(self):
 
-        self.add_object({"Name": "Y1",
-                        "Type": "Line",
-                        "Coords": [Coordinate(0, 300), Coordinate(50, 200)]})
+    #     self.add_object({"Name": "Y1",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(0, 300), Coordinate(50, 200)]})
 
-        self.add_object({"Name": "Y2",
-                        "Type": "Line",
-                        "Coords": [Coordinate(100, 300), Coordinate(50, 200)]})
+    #     self.add_object({"Name": "Y2",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(100, 300), Coordinate(50, 200)]})
 
-        self.add_object({"Name": "Y3",
-                        "Type": "Line",
-                        "Coords": [Coordinate(50, 200), Coordinate(50, 100)]})
+    #     self.add_object({"Name": "Y3",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(50, 200), Coordinate(50, 100)]})
 
-        self.add_object({"Name": "A1",
-                        "Type": "Line",
-                        "Coords": [Coordinate(140, 100), Coordinate(190, 300)]})
+    #     self.add_object({"Name": "A1",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(140, 100), Coordinate(190, 300)]})
 
-        self.add_object({"Name": "A2",
-                        "Type": "Line",
-                        "Coords": [Coordinate(190, 300), Coordinate(240, 100)]})
+    #     self.add_object({"Name": "A2",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(190, 300), Coordinate(240, 100)]})
 
-        self.add_object({"Name": "A3",
-                        "Type": "Line",
-                        "Coords": [Coordinate(165, 180), Coordinate(215, 180)]})
+    #     self.add_object({"Name": "A3",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(165, 180), Coordinate(215, 180)]})
 
-        self.add_object({"Name": "N1",
-                        "Type": "Line",
-                        "Coords": [Coordinate(280, 100), Coordinate(280, 300)]})
+    #     self.add_object({"Name": "N1",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(280, 100), Coordinate(280, 300)]})
 
-        self.add_object({"Name": "N2",
-                        "Type": "Line",
-                        "Coords": [Coordinate(280, 300), Coordinate(380, 100)]})
+    #     self.add_object({"Name": "N2",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(280, 300), Coordinate(380, 100)]})
 
-        self.add_object({"Name": "N3",
-                        "Type": "Line",
-                        "Coords": [Coordinate(380, 100), Coordinate(380, 300)]})
+    #     self.add_object({"Name": "N3",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(380, 100), Coordinate(380, 300)]})
 
-        self.add_object({"Name": "O1",
-                        "Type": "Line",
-                        "Coords": [Coordinate(420, 105), Coordinate(420, 295)]})
+    #     self.add_object({"Name": "O1",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(420, 105), Coordinate(420, 295)]})
 
-        self.add_object({"Name": "O2",
-                        "Type": "Line",
-                        "Coords": [Coordinate(420, 295), Coordinate(520, 295)]})
+    #     self.add_object({"Name": "O2",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(420, 295), Coordinate(520, 295)]})
 
-        self.add_object({"Name": "O3",
-                        "Type": "Line",
-                        "Coords": [Coordinate(520, 295), Coordinate(520, 105)]})
+    #     self.add_object({"Name": "O3",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(520, 295), Coordinate(520, 105)]})
 
-        self.add_object({"Name": "O4",
-                        "Type": "Line",
-                        "Coords": [Coordinate(520, 105), Coordinate(420, 105)]})
+    #     self.add_object({"Name": "O4",
+    #                     "Type": "Line",
+    #                     "Coords": [Coordinate(520, 105), Coordinate(420, 105)]})

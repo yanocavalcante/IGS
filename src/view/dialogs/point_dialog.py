@@ -1,5 +1,4 @@
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QFormLayout, QLineEdit, QVBoxLayout
-from core.coordinate import Coordinate
 
 
 class PointDialog(QDialog):
@@ -12,8 +11,10 @@ class PointDialog(QDialog):
 
         self.__x = QLineEdit()
         self.__y = QLineEdit()
+        self.__z = QLineEdit()
         form.addRow("X:", self.__x)
         form.addRow("Y:", self.__y)
+        form.addRow("Z:", self.__z)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok
@@ -24,5 +25,5 @@ class PointDialog(QDialog):
         layout.addLayout(form)
         layout.addWidget(buttons)
 
-    def get_coords(self) -> list[Coordinate]:
-        return [Coordinate(float(self.__x.text()), float(self.__y.text()))]
+    def get_coords(self) -> list[list]:
+        return [[float(self.__x.text()), float(self.__y.text()), float(self.__z.text())]]

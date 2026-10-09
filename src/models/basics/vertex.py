@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from core.coordinate import Coordinate
+from models.basics.coordinate import Coordinate
 
 
 @dataclass

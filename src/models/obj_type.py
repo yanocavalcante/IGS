@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class ObjectType(Enum):
+    WINDOW = 0
     POINT = 1
     LINE = 2
     WIREFRAME = 3
