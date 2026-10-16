@@ -3,14 +3,16 @@ from core.viewport import Viewport
 from core.window import Window
 from core.transformer import Transformer
 from core.clipper import Clipper
+from core.projection import Projection
 from models.display_file import DisplayFile
 from models.graphic_obj import GraphicObject
-from models.line import Line
 from models.obj_type import ObjectType
 from models.point import Point
+from models.line import Line
 from models.wireframe import Wireframe
 from models.bezier_curve import BezierCurve
 from models.bspline_curve import BSplineCurve
+from models.object_3d import Object3D
 from view.interface import SGIInterface
 
 
@@ -19,14 +21,15 @@ _TYPE_MAP: dict[str, tuple[type[GraphicObject], ObjectType]] = {
     "Line": (Line, ObjectType.LINE),
     "Wireframe": (Wireframe, ObjectType.WIREFRAME),
     "Curve": (BezierCurve, ObjectType.CURVE),
-    "B-Spline": (BSplineCurve, ObjectType.BSPLINE)
+    "B-Spline": (BSplineCurve, ObjectType.BSPLINE),
+    "3D Object": (Object3D, ObjectType.OBJECT_3D),
 }
 
 
 class Controller:
     def __init__(self) -> None:
         self.display_file = DisplayFile()
-        self.window = Window(0, 0, 600, 400)
+        self.__create_window()
         self.viewport = Viewport(0, 0, 600, 400)
         self.sgi = SGIInterface(self)
         self.transformer = Transformer(self.window)
@@ -36,8 +39,9 @@ class Controller:
         self.testing()
 
     def add_object(self, obj_dict: dict) -> None:
-        obj_class, obj_type = _TYPE_MAP[obj_dict["Type"]]
-        self.display_file.add(obj_class, obj_type, obj_dict["Name"], obj_dict["Coords"])
+        obj_type_name = obj_dict["Type"]
+        obj_class, obj_type = _TYPE_MAP[obj_type_name]
+        self.display_file.add(obj_class, obj_type, obj_dict["Name"], obj_dict["Coords"],**({"edges": obj_dict["Edges"]} if "Edges" in obj_dict else {}))
         self.sgi.refresh_canvas()
 
     def remove_object(self, obj_id: int) -> None:
@@ -46,18 +50,20 @@ class Controller:
 
     def transform_object(self, transformation_dict: dict) -> None:
         object_id = int(transformation_dict["object"].split(" - ", 1)[0])
+        obj = self.display_file.get_by_id(object_id)
+
         match transformation_dict["operation"]:
             case("translation"):
-                self.transformer.translate(self.display_file.get_by_id(object_id), transformation_dict["dx"], transformation_dict["dy"])
+                self.transformer.translate(obj, transformation_dict["dx"], transformation_dict["dy"], transformation_dict.get("dz", 0.0))
             case("rotation"):
-                self.transformer.rotate(self.display_file.get_by_id(object_id), transformation_dict["angle"], transformation_dict["center"])
+                self.transformer.rotate(obj, transformation_dict["angle"], transformation_dict["center"], transformation_dict.get("axis", "z"))
             case("scaling"):
-                self.transformer.scale(self.display_file.get_by_id(object_id), transformation_dict["sx"], transformation_dict["sy"])
+                self.transformer.scale(obj, transformation_dict["sx"], transformation_dict["sy"], transformation_dict.get("sz", 1.0))
         self.transformer.update_normalization_matrix(self.window)
         self.sgi.refresh_canvas()
 
-    def pan(self, dx: float, dy: float) -> None:
-        self.window.pan(dx, dy)
+    def pan(self, dx: float, dy: float, dz: float = 0.0) -> None:
+        self.window.pan(dx, dy, dz)
         self.transformer.update_normalization_matrix(self.window)
         self.sgi.refresh_canvas()
 
@@ -69,6 +75,10 @@ class Controller:
     def rotate(self, factor: float) -> None:
         self.window.rotate(factor)
         self.transformer.update_normalization_matrix(self.window)
+        self.sgi.refresh_canvas()
+
+    def rotate_view(self, axis: str, factor: float) -> None:
+        self.window.rotate_view(axis, factor)
         self.sgi.refresh_canvas()
 
     def resize_viewport(self, width: float, height: float) -> None:
@@ -83,16 +93,18 @@ class Controller:
         drawable_objects = []
 
         for obj in self.display_file.objects:
-            if obj.type in (ObjectType.CURVE, ObjectType.BSPLINE):
-                clipped_coords = self.__clip_curve(self.transformer.normalize(obj))
-            else:
-                clipped_coords = self.clipper.clipping(self.transformer.normalize(obj))
-
-            if not clipped_coords:
+            if not isinstance(obj, Object3D):
                 continue
 
-            for clipped_obj in clipped_coords:
-                drawable_objects.append((obj, self.viewport.transform_all(clipped_obj, self.window)))
+            projected = [Projection.parallel(coord, self.window) for coord in obj.coords]
+            obj.visible_edges = []
+            for start, end in obj.edges:
+                normalized_edge = self.transformer.normalize_coords([projected[start], projected[end]])
+                clipped_edge = self.clipper.cohen_sutherland(normalized_edge)
+                if clipped_edge:
+                    obj.visible_edges.append(self.viewport.transform_all(clipped_edge, self.window))
+            if obj.visible_edges:
+                drawable_objects.append((obj, []))
 
         return drawable_objects
 
@@ -116,83 +128,29 @@ class Controller:
 
         return runs
 
+    def __create_window(self):
+        self.window = Window([
+            Coordinate(-300, -200, 0), Coordinate(-300, 200, 0),
+            Coordinate(300, 200, 0), Coordinate(300, -200, 0),
+        ])
+
     def testing(self):
-        # self.add_object({"Name": "Point",
-        #                  "Type": "Point",
-        #                  "Coords": [Coordinate(0, 300)]})
-        
-        # self.add_object({"Name": "Line",
-        #                  "Type": "Line",
-        #                  "Coords": [Coordinate(0, 300), Coordinate(200, 300)]})
+        cube = [
+            Coordinate(-180, -80, -60), Coordinate(-60, -80, -60),
+            Coordinate(-60, 40, -60), Coordinate(-180, 40, -60),
+            Coordinate(-180, -80, 60), Coordinate(-60, -80, 60),
+            Coordinate(-60, 40, 60), Coordinate(-180, 40, 60),
+        ]
+        cube_edges = [(0, 1), (1, 2), (2, 3), (3, 0),
+                      (4, 5), (5, 6), (6, 7), (7, 4),
+                      (0, 4), (1, 5), (2, 6), (3, 7)]
+        self.add_object({"Name": "Cube", "Type": "3D Object", "Coords": cube, "Edges": cube_edges})
 
-        self.add_object({"Name": "Isosceles",
-                         "Type": "Wireframe",
-                         "Coords": [Coordinate(0,0), Coordinate(200, 200),
-                                                     Coordinate(400,0)]})
-
-        self.add_object({"Name": "Bézier",
-                         "Type": "Curve",
-                         "Coords": [Coordinate(100, 100), Coordinate(200, 200),
-                                                     Coordinate(300, 200), Coordinate(400, 100)]})
-
-        self.add_object({"Name": "B-Spline",
-                         "Type": "B-Spline",
-                         "Coords": [Coordinate(100, 50), Coordinate(160, 200),
-                                                     Coordinate(240, 200), Coordinate(300, 50),
-                                                     Coordinate(380, 180), Coordinate(460, 80)]})
-        
-        # self.yano()
-
-    def yano(self):
-
-        self.add_object({"Name": "Y1",
-                        "Type": "Line",
-                        "Coords": [Coordinate(0, 300), Coordinate(50, 200)]})
-
-        self.add_object({"Name": "Y2",
-                        "Type": "Line",
-                        "Coords": [Coordinate(100, 300), Coordinate(50, 200)]})
-
-        self.add_object({"Name": "Y3",
-                        "Type": "Line",
-                        "Coords": [Coordinate(50, 200), Coordinate(50, 100)]})
-
-        self.add_object({"Name": "A1",
-                        "Type": "Line",
-                        "Coords": [Coordinate(140, 100), Coordinate(190, 300)]})
-
-        self.add_object({"Name": "A2",
-                        "Type": "Line",
-                        "Coords": [Coordinate(190, 300), Coordinate(240, 100)]})
-
-        self.add_object({"Name": "A3",
-                        "Type": "Line",
-                        "Coords": [Coordinate(165, 180), Coordinate(215, 180)]})
-
-        self.add_object({"Name": "N1",
-                        "Type": "Line",
-                        "Coords": [Coordinate(280, 100), Coordinate(280, 300)]})
-
-        self.add_object({"Name": "N2",
-                        "Type": "Line",
-                        "Coords": [Coordinate(280, 300), Coordinate(380, 100)]})
-
-        self.add_object({"Name": "N3",
-                        "Type": "Line",
-                        "Coords": [Coordinate(380, 100), Coordinate(380, 300)]})
-
-        self.add_object({"Name": "O1",
-                        "Type": "Line",
-                        "Coords": [Coordinate(420, 105), Coordinate(420, 295)]})
-
-        self.add_object({"Name": "O2",
-                        "Type": "Line",
-                        "Coords": [Coordinate(420, 295), Coordinate(520, 295)]})
-
-        self.add_object({"Name": "O3",
-                        "Type": "Line",
-                        "Coords": [Coordinate(520, 295), Coordinate(520, 105)]})
-
-        self.add_object({"Name": "O4",
-                        "Type": "Line",
-                        "Coords": [Coordinate(520, 105), Coordinate(420, 105)]})
+        pyramid = [
+            Coordinate(60, -100, -60), Coordinate(180, -100, -60),
+            Coordinate(180, 20, -60), Coordinate(60, 20, -60),
+            Coordinate(120, -40, 100),
+        ]
+        pyramid_edges = [(0, 1), (1, 2), (2, 3), (3, 0),
+                         (0, 4), (1, 4), (2, 4), (3, 4)]
+        self.add_object({"Name": "Pyramid", "Type": "3D Object", "Coords": pyramid, "Edges": pyramid_edges})
