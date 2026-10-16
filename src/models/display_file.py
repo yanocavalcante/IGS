@@ -8,8 +8,9 @@ class DisplayFile:
         self.__objects: list[GraphicObject] = []
         self.__next_id: int = 1
 
-    def add(self, obj_class: type[GraphicObject], obj_type: ObjectType, name: str, coords: list[Coordinate]) -> GraphicObject:
-        obj = obj_class(name, self.__next_id, obj_type, coords)
+    def add(self, obj_class: type[GraphicObject], obj_type: ObjectType, name: str,
+            coords: list[Coordinate], **kwargs) -> GraphicObject:
+        obj = obj_class(name, self.__next_id, obj_type, coords, **kwargs)
         self.__next_id += 1
         self.__objects.append(obj)
 
