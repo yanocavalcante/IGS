@@ -55,14 +55,16 @@ class SGIInterface(QMainWindow):
 
         menu_layout.addWidget(QLabel("Navigation"))
         nav_layout = QGridLayout()
-        self.__add_button(nav_layout, "Rotate Left", self.__rotate_left, 1, 0)
+        self.__add_button(nav_layout, "Yaw Left", self.__rotate_left, 1, 0)
         self.__add_button(nav_layout, "Up", self.__move_up, 1, 1)
-        self.__add_button(nav_layout, "Rotate Right", self.__rotate_right, 1, 2)
+        self.__add_button(nav_layout, "Yaw Right", self.__rotate_right, 1, 2)
         self.__add_button(nav_layout, "Left", self.__move_left, 2, 0)
         self.__add_button(nav_layout, "Down", self.__move_down, 2, 1)
         self.__add_button(nav_layout, "Right", self.__move_right, 2, 2)
+        self.__add_button(nav_layout, "Pitch +", self.__pitch_up, 3, 0)
+        self.__add_button(nav_layout, "Pitch -", self.__pitch_down, 3, 2)
         
-        self.angle_label = QLabel("Angle: 0°")
+        self.angle_label = QLabel("Yaw: -30°")
         nav_layout.addWidget(self.angle_label)
 
         menu_layout.addLayout(nav_layout)
@@ -106,14 +108,20 @@ class SGIInterface(QMainWindow):
     def __rotate_left(self) -> None:
         self.__controller.rotate(+ROTATION_FACTOR)
         self.angle_label.setText(
-            f"Angle: {self.__controller.window.angle:.0f}°"
+            f"Yaw: {self.__controller.window.angle:.0f}°"
         )
 
     def __rotate_right(self) -> None:
         self.__controller.rotate(-ROTATION_FACTOR)
         self.angle_label.setText(
-            f"Angle: {self.__controller.window.angle:.0f}°"
+            f"Yaw: {self.__controller.window.angle:.0f}°"
         )
+
+    def __pitch_up(self) -> None:
+        self.__controller.rotate_view("x", ROTATION_FACTOR)
+
+    def __pitch_down(self) -> None:
+        self.__controller.rotate_view("x", -ROTATION_FACTOR)
 
     def __create_object(self) -> None:
         dialog = CreateObjectDialog(self)

@@ -13,6 +13,7 @@ from view.dialogs.point_dialog import PointDialog
 from view.dialogs.wireframe_dialog import WireframeDialog
 from view.dialogs.curve_dialog import CurveDialog
 from view.dialogs.bspline_dialog import BSplineDialog
+from view.dialogs.object_3d_dialog import Object3DDialog
 
 _COORD_DIALOGS = {
     "Point": PointDialog,
@@ -20,6 +21,7 @@ _COORD_DIALOGS = {
     "Wireframe": WireframeDialog,
     "Curve": CurveDialog,
     "B-Spline": BSplineDialog,
+    "3D Object": Object3DDialog,
 }
 
 class CreateObjectDialog(QDialog):
@@ -66,8 +68,11 @@ class CreateObjectDialog(QDialog):
         if coord_dialog.exec() != QDialog.DialogCode.Accepted:
             return None
 
-        return {
+        result = {
             "Name": name,
             "Type": obj_type,
             "Coords": coord_dialog.get_coords(),
         }
+        if obj_type == "3D Object":
+            result["Edges"] = coord_dialog.get_edges()
+        return result
