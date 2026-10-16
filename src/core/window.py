@@ -1,57 +1,51 @@
+from .coordinate import Coordinate
 import numpy as np
 
 
 class Window:
-    def __init__(self, xwmin: float, ywmin: float, xwmax: float, ywmax: float) -> None:
-        self.__xwmin = xwmin
-        self.__ywmin = ywmin
-        self.__xwmax = xwmax
-        self.__ywmax = ywmax
+    def __init__(self, coords: list[Coordinate]) -> None:
+        self.__coords = coords
+        self.__theta_y = -30
+        self.__theta_x = 25
+        self.__theta_z = 0
 
         self.__norm_xwmin = -1
         self.__norm_ywmin = -1
         self.__norm_xwmax = 1
         self.__norm_ywmax = 1
 
-        # Describes the angle (theta) between the Y axis and Vup
-        self.__angle = 0
+    @property
+    def coords(self) -> list[Coordinate]:
+        return self.__coords
 
     @property
     def xwmin(self) -> float:
-        return self.__xwmin
-
-    @xwmin.setter
-    def xwmin(self, value):
-        self.__xwmin = value        
+        return self.__coords[0].x
 
     @property
     def ywmin(self) -> float:
-        return self.__ywmin
+        return self.__coords[0].y
 
-    @ywmin.setter
-    def ywmin(self, value):
-        self.__ywmin = value        
+    @property
+    def zwmin(self) -> float:
+        return self.__coords[0].z
 
     @property
     def xwmax(self) -> float:
-        return self.__xwmax
-
-    @xwmax.setter
-    def xwmax(self, value):
-        self.__xwmax = value        
+        return self.__coords[2].x
 
     @property
     def ywmax(self) -> float:
-        return self.__ywmax
+        return self.__coords[2].y
 
-    @ywmax.setter
-    def ywmax(self, value):
-        self.__ywmax = value        
+    @property
+    def zwmax(self) -> float:
+        return self.__coords[2].z
 
     @property
     def norm_xwmin(self) -> float:
         return self.__norm_xwmin
-      
+
     @property
     def norm_ywmin(self) -> float:
         return self.__norm_ywmin
@@ -66,76 +60,99 @@ class Window:
       
     @property
     def width(self) -> float:
-        return self.__xwmax - self.__xwmin
+        return self.xwmax - self.xwmin
 
     @property
     def height(self) -> float:
-        return self.__ywmax - self.__ywmin
+        return self.ywmax - self.ywmin
 
     @property
-    def center(self) -> list[float]:
-        return [((self.__xwmin + self.__xwmax) / 2),
-                ((self.__ywmin + self.__ywmax) / 2)]
+    def center(self) -> Coordinate:
+        return Coordinate((self.xwmin + self.xwmax)/2,
+                                  (self.ywmin + self.ywmax)/2,
+                                    (self.zwmin + self.zwmax)/2)
+
+    @property
+    def theta_x(self) -> float:
+        return self.__theta_x
+
+    @theta_x.setter
+    def theta_x(self, value):
+        self.__theta_x = value
+
+    @property
+    def theta_y(self) -> float:
+        return self.__theta_y
+
+    @theta_y.setter
+    def theta_y(self, value):
+        self.__theta_y = value
 
     @property
     def angle(self) -> float:
-        return self.__angle
+        return self.theta_y
 
-    @angle.setter
-    def angle(self, value):
-        self.__angle = value
+    @property
+    def view_angles(self) -> tuple[float, float, float]:
+        return self.theta_x, self.theta_y, self.__theta_z
 
     @property
     def vup(self):
-        angle = self.angle * (np.pi/180)
+        theta_y = self.theta_y * (np.pi/180)
 
         return np.array([
-            np.sin(angle),
-             np.cos(angle)
+            np.sin(theta_y),
+             np.cos(theta_y)
         ])
 
     @property
     def vright(self):
-        angle = self.angle * (np.pi/180)
+        theta_y = self.theta_y * (np.pi/180)
 
         return np.array([
-            np.cos(angle),
-              -np.sin(angle)
+            np.cos(theta_y),
+              -np.sin(theta_y)
         ])
 
-    def pan(self, dx: float, dy: float) -> None:
-        movement = dx * self.vright + dy * self.vup
-
-        self.xwmin += movement[0]
-        self.xwmax += movement[0]
-        self.ywmin += movement[1]
-        self.ywmax += movement[1]
+    def pan(self, dx: float, dy: float, dz: float) -> None:
+        for coord in self.__coords:
+            coord.x += dx
+            coord.y += dy
+            coord.z += dz
 
     def zoom(self, factor: float) -> None:
         if factor <= 0:
             raise ValueError("Zoom factor must be greater than zero")
 
-        half_width = (self.width * factor) / 2
-        half_height = (self.height * factor) / 2
+        center = self.center
 
-        self.__xwmin = self.center[0] - half_width
-        self.__xwmax = self.center[0] + half_width
-        self.__ywmin = self.center[1] - half_height
-        self.__ywmax = self.center[1] + half_height
+        for coord in self.__coords:
+            coord.x = center.x + (coord.x - center.x) * factor
+            coord.y = center.y + (coord.y - center.y) * factor
 
-    def rotate(self, factor: float) -> None:
-        self.__angle += factor
+    def rotate(self, angle: float) -> None:
+        self.theta_y = (self.theta_y + angle) % 360
+
+    def rotate_view(self, axis: str, angle: float) -> None:
+        if axis == "x":
+            self.theta_x = (self.theta_x + angle) % 360
+        elif axis == "y":
+            self.rotate(angle)
+        elif axis == "z":
+            self.__theta_z = (self.__theta_z + angle) % 360
+        else:
+            raise ValueError("View rotation axis must be x, y or z.")
 
     def match_aspect_ratio(self, aspect_ratio: float) -> None:
         if aspect_ratio <= 0:
             raise ValueError("Aspect ratio must be greater than zero")
 
-        center_x = (self.__xwmin + self.__xwmax) / 2
-        half_width = (self.height * aspect_ratio) / 2
+        center = self.center
 
-        self.__xwmin = center_x - half_width
-        self.__xwmax = center_x + half_width
+        half_height = self.height / 2
+        half_width = half_height * aspect_ratio
 
-    def __repr__(self) -> str:
-        return (f"Window(xwmin={self.__xwmin:.1f}, ywmin={self.__ywmin:.1f}, "
-                f"xwmax={self.__xwmax:.1f}, ywmax={self.__ywmax:.1f})")
+        self.__coords[0].x = center.x - half_width
+        self.__coords[1].x = center.x - half_width
+        self.__coords[2].x = center.x + half_width
+        self.__coords[3].x = center.x + half_width
