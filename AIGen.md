@@ -54,6 +54,7 @@ Os modelos ficam em `./assets/models/` e são carregados pelo botão `Load .obj`
 | --- | --- | --- |
 | `parallelepiped_lines.obj` | Paralelepípedo 120x60x200 com arestas em `l` (polilinhas) | Carga de modelo de arame `.obj`; exibição em perspectiva; efeito de grande angular/teleobjetiva (maior profundidade em Z) |
 | `parallelepiped_faces.obj` | Paralelepípedo 80x120x80 com arestas derivadas de `f` (inclui `v/vt/vn` e índices negativos) | Carga de `.obj` com faces; eliminação de arestas duplicadas (12 arestas); exibição em perspectiva |
+| `far_cubes.obj` | 5 cubos (lado 80) afastados em Z, de z=200 a z=-1000 | Objetos distantes entre si em profundidade; objetos distantes aparecem menores; contraste grande angular x teleobjetiva (na tele os 5 cubos ficam com o mesmo tamanho) |
 
 A cena inicial (`Cube` e `Pyramid`, criados em `Controller.testing()`) cobre o requisito de pelo menos 2 objetos 3D no *Display File*. O botão `Projection` alterna entre perspectiva e paralela, e `COP -` / `COP +` aproximam/afastam o COP (grande angular / teleobjetiva).
 

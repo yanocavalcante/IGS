@@ -1,0 +1,103 @@
+From 124c65ee0f572ce81978ddf184fe723fba55a80e Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 23 Oct 2026 14:43:20 +0000
+Subject: [PATCH] test: far_cubes.obj model with objects spread along depth
+
+---
+ AIGen.md                    |  1 +
+ assets/models/far_cubes.obj | 74 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 75 insertions(+)
+ create mode 100644 assets/models/far_cubes.obj
+
+diff --git a/AIGen.md b/AIGen.md
+index c2997f1..7ae8aee 100644
+--- a/AIGen.md
++++ b/AIGen.md
+@@ -54,6 +54,7 @@ Os modelos ficam em `./assets/models/` e são carregados pelo botão `Load .obj`
+ | --- | --- | --- |
+ | `parallelepiped_lines.obj` | Paralelepípedo 120x60x200 com arestas em `l` (polilinhas) | Carga de modelo de arame `.obj`; exibição em perspectiva; efeito de grande angular/teleobjetiva (maior profundidade em Z) |
+ | `parallelepiped_faces.obj` | Paralelepípedo 80x120x80 com arestas derivadas de `f` (inclui `v/vt/vn` e índices negativos) | Carga de `.obj` com faces; eliminação de arestas duplicadas (12 arestas); exibição em perspectiva |
++| `far_cubes.obj` | 5 cubos (lado 80) afastados em Z, de z=200 a z=-1000 | Objetos distantes entre si em profundidade; objetos distantes aparecem menores; contraste grande angular x teleobjetiva (na tele os 5 cubos ficam com o mesmo tamanho) |
+ 
+ A cena inicial (`Cube` e `Pyramid`, criados em `Controller.testing()`) cobre o requisito de pelo menos 2 objetos 3D no *Display File*. O botão `Projection` alterna entre perspectiva e paralela, e `COP -` / `COP +` aproximam/afastam o COP (grande angular / teleobjetiva).
+ 
+diff --git a/assets/models/far_cubes.obj b/assets/models/far_cubes.obj
+new file mode 100644
+index 0000000..0d1f51b
+--- /dev/null
++++ b/assets/models/far_cubes.obj
+@@ -0,0 +1,74 @@
++# Row of 5 cubes (side 80) receding along -Z from z=200 to z=-1000, centered on x=0, y=-100.
++# Requirements: objects far apart in depth; shows perspective size diminution and strong
++# wide-angle distortion (COP -). Load it alone or with the default Cube/Pyramid.
++o far_cubes
++v -40 -140 160
++v 40 -140 160
++v 40 -60 160
++v -40 -60 160
++v -40 -140 240
++v 40 -140 240
++v 40 -60 240
++v -40 -60 240
++v -40 -140 -140
++v 40 -140 -140
++v 40 -60 -140
++v -40 -60 -140
++v -40 -140 -60
++v 40 -140 -60
++v 40 -60 -60
++v -40 -60 -60
++v -40 -140 -440
++v 40 -140 -440
++v 40 -60 -440
++v -40 -60 -440
++v -40 -140 -360
++v 40 -140 -360
++v 40 -60 -360
++v -40 -60 -360
++v -40 -140 -740
++v 40 -140 -740
++v 40 -60 -740
++v -40 -60 -740
++v -40 -140 -660
++v 40 -140 -660
++v 40 -60 -660
++v -40 -60 -660
++v -40 -140 -1040
++v 40 -140 -1040
++v 40 -60 -1040
++v -40 -60 -1040
++v -40 -140 -960
++v 40 -140 -960
++v 40 -60 -960
++v -40 -60 -960
++f 1 4 3 2
++f 5 6 7 8
++f 1 2 6 5
++f 2 3 7 6
++f 3 4 8 7
++f 4 1 5 8
++f 9 12 11 10
++f 13 14 15 16
++f 9 10 14 13
++f 10 11 15 14
++f 11 12 16 15
++f 12 9 13 16
++f 17 20 19 18
++f 21 22 23 24
++f 17 18 22 21
++f 18 19 23 22
++f 19 20 24 23
++f 20 17 21 24
++f 25 28 27 26
++f 29 30 31 32
++f 25 26 30 29
++f 26 27 31 30
++f 27 28 32 31
++f 28 25 29 32
++f 33 36 35 34
++f 37 38 39 40
++f 33 34 38 37
++f 34 35 39 38
++f 35 36 40 39
++f 36 33 37 40
