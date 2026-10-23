@@ -3,6 +3,7 @@ from core.viewport import Viewport
 from core.window import Window
 from core.transformer import Transformer
 from core.clipper import Clipper
+from core.obj_loader import ObjLoader
 from core.projection import Projection, ProjectionType
 from models.display_file import DisplayFile
 from models.graphic_obj import GraphicObject
@@ -43,6 +44,10 @@ class Controller:
         obj_class, obj_type = _TYPE_MAP[obj_type_name]
         self.display_file.add(obj_class, obj_type, obj_dict["Name"], obj_dict["Coords"],**({"edges": obj_dict["Edges"]} if "Edges" in obj_dict else {}))
         self.sgi.refresh_canvas()
+
+    def load_obj(self, path: str, name: str) -> None:
+        coords, edges = ObjLoader.load(path)
+        self.add_object({"Name": name, "Type": "3D Object", "Coords": coords, "Edges": edges})
 
     def remove_object(self, obj_id: int) -> None:
         self.display_file.remove(obj_id)

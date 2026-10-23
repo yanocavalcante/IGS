@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from PyQt6.QtWidgets import (
     QApplication,
+    QFileDialog,
     QGridLayout,
     QHBoxLayout,
     QLabel,
@@ -87,6 +90,7 @@ class SGIInterface(QMainWindow):
         objects_layout = QGridLayout()
         self.__add_button(objects_layout, "Create", self.__create_object, 0, 0)
         self.__add_button(objects_layout, "Transform", self.__transform, 0, 1)
+        self.__add_button(objects_layout, "Load .obj", self.__load_obj, 1, 0, 2)
 
         menu_layout.addLayout(objects_layout)
 
@@ -96,10 +100,10 @@ class SGIInterface(QMainWindow):
 
         menu_layout.addStretch()
 
-    def __add_button(self, layout, text, callback, row, column) -> QPushButton:
+    def __add_button(self, layout, text, callback, row, column, column_span=1) -> QPushButton:
         button = QPushButton(text)
         button.clicked.connect(callback)
-        layout.addWidget(button, row, column)
+        layout.addWidget(button, row, column, 1, column_span)
 
         return button
 
@@ -169,6 +173,19 @@ class SGIInterface(QMainWindow):
         obj_dict = dialog.get_object_dict()
         if obj_dict is not None:
             self.__controller.add_object(obj_dict)
+
+    def __load_obj(self) -> None:
+        models_dir = Path(__file__).resolve().parents[2] / "assets" / "models"
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Load wireframe model", str(models_dir) if models_dir.is_dir() else "",
+            "Wavefront OBJ (*.obj)")
+        if not path:
+            return
+
+        try:
+            self.__controller.load_obj(path, Path(path).stem)
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(self, "IGS", f"Could not load '{Path(path).name}':\n{error}")
 
     def __transform(self) -> None:
         current_obj = self.object_list.currentItem()
