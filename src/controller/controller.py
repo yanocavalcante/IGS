@@ -46,6 +46,7 @@ class Controller:
         self.sgi.refresh_canvas()
 
     def load_obj(self, path: str, name: str) -> None:
+        """[IAGen] Generated with the help of an LLM (see AIGen.md)."""
         coords, edges = ObjLoader.load(path)
         self.add_object({"Name": name, "Type": "3D Object", "Coords": coords, "Edges": edges})
 
@@ -122,7 +123,11 @@ class Controller:
         return drawable_objects
 
     def __project_edges(self, obj: Object3D) -> list[list[Coordinate]]:
-        """Projects every edge of the object onto the projection plane (UV)."""
+        """
+        Projects every edge of the object onto the projection plane (UV).
+
+        [IAGen] Method generated with the help of an LLM (see AIGen.md).
+        """
         if self.window.projection is ProjectionType.PERSPECTIVE:
             view = [Projection.view_space(coord, self.window) for coord in obj.coords]
             edges = (Projection.perspective_edge(view[start], view[end], self.window)

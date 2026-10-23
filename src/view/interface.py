@@ -153,6 +153,7 @@ class SGIInterface(QMainWindow):
         self.__controller.move_cop(COP_FARTHER_FACTOR)
 
     def refresh_projection_controls(self) -> None:
+        """[IAGen] Generated with the help of an LLM (see AIGen.md)."""
         window = self.__controller.window
         perspective = window.projection is ProjectionType.PERSPECTIVE
 
@@ -175,6 +176,7 @@ class SGIInterface(QMainWindow):
             self.__controller.add_object(obj_dict)
 
     def __load_obj(self) -> None:
+        """[IAGen] Generated with the help of an LLM (see AIGen.md)."""
         models_dir = Path(__file__).resolve().parents[2] / "assets" / "models"
         path, _ = QFileDialog.getOpenFileName(
             self, "Load wireframe model", str(models_dir) if models_dir.is_dir() else "",
