@@ -3,7 +3,7 @@ from core.viewport import Viewport
 from core.window import Window
 from core.transformer import Transformer
 from core.clipper import Clipper
-from core.projection import Projection
+from core.projection import Projection, ProjectionType
 from models.display_file import DisplayFile
 from models.graphic_obj import GraphicObject
 from models.obj_type import ObjectType
@@ -88,6 +88,15 @@ class Controller:
         self.viewport.resize(width, height)
         self.window.match_aspect_ratio(width / height)
         self.transformer.update_normalization_matrix(self.window)
+        self.sgi.refresh_projection_controls()
+
+    def toggle_projection(self) -> None:
+        self.window.toggle_projection()
+        self.sgi.refresh_canvas()
+
+    def move_cop(self, factor: float) -> None:
+        self.window.move_cop(factor)
+        self.sgi.refresh_canvas()
 
     def get_drawable_objects(self) -> list[tuple[GraphicObject, list[Coordinate]]]:
         drawable_objects = []
@@ -96,10 +105,9 @@ class Controller:
             if not isinstance(obj, Object3D):
                 continue
 
-            projected = [Projection.parallel(coord, self.window) for coord in obj.coords]
             obj.visible_edges = []
-            for start, end in obj.edges:
-                normalized_edge = self.transformer.normalize_coords([projected[start], projected[end]])
+            for edge in self.__project_edges(obj):
+                normalized_edge = self.transformer.normalize_coords(edge)
                 clipped_edge = self.clipper.cohen_sutherland(normalized_edge)
                 if clipped_edge:
                     obj.visible_edges.append(self.viewport.transform_all(clipped_edge, self.window))
@@ -107,6 +115,19 @@ class Controller:
                 drawable_objects.append((obj, []))
 
         return drawable_objects
+
+    def __project_edges(self, obj: Object3D) -> list[list[Coordinate]]:
+        """Projects every edge of the object onto the projection plane (UV)."""
+        if self.window.projection is ProjectionType.PERSPECTIVE:
+            view = [Projection.view_space(coord, self.window) for coord in obj.coords]
+            edges = (Projection.perspective_edge(view[start], view[end], self.window)
+                     for start, end in obj.edges)
+
+            return [edge for edge in edges if edge]
+
+        projected = [Projection.parallel(coord, self.window) for coord in obj.coords]
+
+        return [[projected[start], projected[end]] for start, end in obj.edges]
 
     def __clip_curve(self, coords: list[Coordinate]) -> list[list[Coordinate]]:
         """Clips a curve (polyline) segment by segment.
