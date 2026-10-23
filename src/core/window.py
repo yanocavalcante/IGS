@@ -1,5 +1,10 @@
 from .coordinate import Coordinate
+from .projection import ProjectionType
 import numpy as np
+
+
+COP_MIN_DISTANCE = 20.0
+COP_MAX_DISTANCE = 20000.0
 
 
 class Window:
@@ -8,6 +13,9 @@ class Window:
         self.__theta_y = -30
         self.__theta_x = 25
         self.__theta_z = 0
+
+        self.__projection = ProjectionType.PERSPECTIVE
+        self.__cop_distance = 600.0
 
         self.__norm_xwmin = -1
         self.__norm_ywmin = -1
@@ -113,6 +121,32 @@ class Window:
             np.cos(theta_y),
               -np.sin(theta_y)
         ])
+
+    @property
+    def projection(self) -> ProjectionType:
+        return self.__projection
+
+    @property
+    def cop_distance(self) -> float:
+        """Distance d from the (virtual) COP to the projection plane, along the VPN."""
+        return self.__cop_distance
+
+    @property
+    def field_of_view(self) -> float:
+        """Horizontal field of view, in degrees, subtended by the Window from the COP."""
+        return float(np.degrees(2 * np.arctan((self.width / 2) / self.__cop_distance)))
+
+    def toggle_projection(self) -> None:
+        if self.__projection is ProjectionType.PERSPECTIVE:
+            self.__projection = ProjectionType.PARALLEL
+        else:
+            self.__projection = ProjectionType.PERSPECTIVE
+
+    def move_cop(self, factor: float) -> None:
+        if factor <= 0:
+            raise ValueError("COP factor must be greater than zero")
+
+        self.__cop_distance = min(max(self.__cop_distance * factor, COP_MIN_DISTANCE), COP_MAX_DISTANCE)
 
     def pan(self, dx: float, dy: float, dz: float) -> None:
         for coord in self.__coords:

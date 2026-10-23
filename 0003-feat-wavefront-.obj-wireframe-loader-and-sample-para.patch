@@ -1,0 +1,228 @@
+From 7f685a275263d3e46037ed069507189272cd8f79 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 22 Oct 2026 20:06:34 +0000
+Subject: [PATCH 3/4] feat: wavefront .obj wireframe loader and sample
+ parallelepiped models
+
+---
+ assets/models/parallelepiped_faces.obj | 20 +++++++
+ assets/models/parallelepiped_lines.obj | 17 ++++++
+ src/controller/controller.py           |  5 ++
+ src/core/obj_loader.py                 | 79 ++++++++++++++++++++++++++
+ src/view/interface.py                  | 21 ++++++-
+ 5 files changed, 140 insertions(+), 2 deletions(-)
+ create mode 100644 assets/models/parallelepiped_faces.obj
+ create mode 100644 assets/models/parallelepiped_lines.obj
+ create mode 100644 src/core/obj_loader.py
+
+diff --git a/assets/models/parallelepiped_faces.obj b/assets/models/parallelepiped_faces.obj
+new file mode 100644
+index 0000000..e8fbbfe
+--- /dev/null
++++ b/assets/models/parallelepiped_faces.obj
+@@ -0,0 +1,20 @@
++# Parallelepiped wireframe, 80 x 120 x 80, edges derived from "f" faces
++# (indices with /vt/vn and negative indices are also exercised).
++# Requirements: load a wireframe .obj parallelepiped and view it in perspective.
++o parallelepiped_faces
++v -40 -60 -40
++v  40 -60 -40
++v  40  60 -40
++v -40  60 -40
++v -40 -60  40
++v  40 -60  40
++v  40  60  40
++v -40  60  40
++vt 0 0
++vn 0 0 1
++f 1/1/1 4/1/1 3/1/1 2/1/1
++f 5 6 7 8
++f 1 2 6 5
++f 2 3 7 6
++f 3 4 8 7
++f -8 -4 -1 -5
+diff --git a/assets/models/parallelepiped_lines.obj b/assets/models/parallelepiped_lines.obj
+new file mode 100644
+index 0000000..0e321fa
+--- /dev/null
++++ b/assets/models/parallelepiped_lines.obj
+@@ -0,0 +1,17 @@
++# Parallelepiped wireframe, 120 x 60 x 200, edges given as "l" polylines.
++# Requirements: load a wireframe .obj parallelepiped and view it in perspective.
++o parallelepiped_lines
++v -60 -30 -100
++v  60 -30 -100
++v  60  30 -100
++v -60  30 -100
++v -60 -30  100
++v  60 -30  100
++v  60  30  100
++v -60  30  100
++l 1 2 3 4 1
++l 5 6 7 8 5
++l 1 5
++l 2 6
++l 3 7
++l 4 8
+diff --git a/src/controller/controller.py b/src/controller/controller.py
+index 4511c41..a1df65a 100644
+--- a/src/controller/controller.py
++++ b/src/controller/controller.py
+@@ -3,6 +3,7 @@ from core.viewport import Viewport
+ from core.window import Window
+ from core.transformer import Transformer
+ from core.clipper import Clipper
++from core.obj_loader import ObjLoader
+ from core.projection import Projection, ProjectionType
+ from models.display_file import DisplayFile
+ from models.graphic_obj import GraphicObject
+@@ -44,6 +45,10 @@ class Controller:
+         self.display_file.add(obj_class, obj_type, obj_dict["Name"], obj_dict["Coords"],**({"edges": obj_dict["Edges"]} if "Edges" in obj_dict else {}))
+         self.sgi.refresh_canvas()
+ 
++    def load_obj(self, path: str, name: str) -> None:
++        coords, edges = ObjLoader.load(path)
++        self.add_object({"Name": name, "Type": "3D Object", "Coords": coords, "Edges": edges})
++
+     def remove_object(self, obj_id: int) -> None:
+         self.display_file.remove(obj_id)
+         self.sgi.refresh_canvas()
+diff --git a/src/core/obj_loader.py b/src/core/obj_loader.py
+new file mode 100644
+index 0000000..4865b43
+--- /dev/null
++++ b/src/core/obj_loader.py
+@@ -0,0 +1,79 @@
++from core.coordinate import Coordinate
++
++
++class ObjLoader:
++    """
++    Loads wireframe models from Wavefront .obj files.
++
++    Supported statements:
++      v x y z [w]      vertex (w is ignored)
++      l i j k ...      polyline: edges (i, j), (j, k), ...
++      f i j k ...      face: its boundary edges (closed), shared edges kept once
++    Indices are 1-based; negative indices are relative to the vertices read
++    so far. Entries such as "i/t/n" use only the vertex index. Any other
++    statement (o, g, vt, vn, s, usemtl, mtllib, ...) and comments are ignored.
++
++    [IAGen] Class generated with the help of an LLM (see AIGen.md).
++    """
++
++    @staticmethod
++    def load(path: str) -> tuple[list[Coordinate], list[tuple[int, int]]]:
++        with open(path, "r", encoding="utf-8") as file:
++            return ObjLoader.parse(file.read())
++
++    @staticmethod
++    def parse(text: str) -> tuple[list[Coordinate], list[tuple[int, int]]]:
++        vertices: list[Coordinate] = []
++        edges: list[tuple[int, int]] = []
++        seen: set[tuple[int, int]] = set()
++
++        def add_edge(a: int, b: int) -> None:
++            key = (min(a, b), max(a, b))
++            if a != b and key not in seen:
++                seen.add(key)
++                edges.append((a, b))
++
++        for number, line in enumerate(text.splitlines(), start=1):
++            tokens = line.split("#", 1)[0].split()
++            if not tokens:
++                continue
++
++            keyword, args = tokens[0], tokens[1:]
++
++            try:
++                if keyword == "v":
++                    if len(args) < 3:
++                        raise ValueError("a vertex needs x, y and z")
++                    vertices.append(Coordinate(*(float(value) for value in args[:3])))
++
++                elif keyword in ("l", "f"):
++                    if len(args) < 2:
++                        raise ValueError("needs at least two vertex indices")
++                    indices = [ObjLoader.__resolve(arg, len(vertices)) for arg in args]
++                    pairs = list(zip(indices, indices[1:]))
++                    if keyword == "f":
++                        pairs.append((indices[-1], indices[0]))
++                    for a, b in pairs:
++                        add_edge(a, b)
++            except ValueError as error:
++                raise ValueError(f"line {number}: {error}") from None
++
++        if len(vertices) < 2 or not edges:
++            raise ValueError("the file must define at least two vertices and one edge (l or f)")
++
++        if max(max(edge) for edge in edges) >= len(vertices):
++            raise ValueError("an edge references a vertex that is never defined")
++
++        return vertices, edges
++
++    @staticmethod
++    def __resolve(token: str, vertex_count: int) -> int:
++        """Converts an .obj index (1-based or negative) into a 0-based index."""
++        index = int(token.split("/", 1)[0])
++
++        if index > 0:
++            return index - 1
++        if index < 0 and -index <= vertex_count:
++            return vertex_count + index
++
++        raise ValueError(f"invalid vertex index {token!r}")
+diff --git a/src/view/interface.py b/src/view/interface.py
+index b623f6b..85674fd 100644
+--- a/src/view/interface.py
++++ b/src/view/interface.py
+@@ -1,5 +1,8 @@
++from pathlib import Path
++
+ from PyQt6.QtWidgets import (
+     QApplication,
++    QFileDialog,
+     QGridLayout,
+     QHBoxLayout,
+     QLabel,
+@@ -87,6 +90,7 @@ class SGIInterface(QMainWindow):
+         objects_layout = QGridLayout()
+         self.__add_button(objects_layout, "Create", self.__create_object, 0, 0)
+         self.__add_button(objects_layout, "Transform", self.__transform, 0, 1)
++        self.__add_button(objects_layout, "Load .obj", self.__load_obj, 1, 0, 2)
+ 
+         menu_layout.addLayout(objects_layout)
+ 
+@@ -96,10 +100,10 @@ class SGIInterface(QMainWindow):
+ 
+         menu_layout.addStretch()
+ 
+-    def __add_button(self, layout, text, callback, row, column) -> QPushButton:
++    def __add_button(self, layout, text, callback, row, column, column_span=1) -> QPushButton:
+         button = QPushButton(text)
+         button.clicked.connect(callback)
+-        layout.addWidget(button, row, column)
++        layout.addWidget(button, row, column, 1, column_span)
+ 
+         return button
+ 
+@@ -170,6 +174,19 @@ class SGIInterface(QMainWindow):
+         if obj_dict is not None:
+             self.__controller.add_object(obj_dict)
+ 
++    def __load_obj(self) -> None:
++        models_dir = Path(__file__).resolve().parents[2] / "assets" / "models"
++        path, _ = QFileDialog.getOpenFileName(
++            self, "Load wireframe model", str(models_dir) if models_dir.is_dir() else "",
++            "Wavefront OBJ (*.obj)")
++        if not path:
++            return
++
++        try:
++            self.__controller.load_obj(path, Path(path).stem)
++        except (OSError, ValueError) as error:
++            QMessageBox.warning(self, "IGS", f"Could not load '{Path(path).name}':\n{error}")
++
+     def __transform(self) -> None:
+         current_obj = self.object_list.currentItem()
+         if not current_obj:
