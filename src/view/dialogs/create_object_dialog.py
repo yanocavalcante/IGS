@@ -14,6 +14,7 @@ from view.dialogs.wireframe_dialog import WireframeDialog
 from view.dialogs.curve_dialog import CurveDialog
 from view.dialogs.bspline_dialog import BSplineDialog
 from view.dialogs.object_3d_dialog import Object3DDialog
+from view.dialogs.bezier_surface_dialog import BezierSurfaceDialog
 
 _COORD_DIALOGS = {
     "Point": PointDialog,
@@ -22,6 +23,7 @@ _COORD_DIALOGS = {
     "Curve": CurveDialog,
     "B-Spline": BSplineDialog,
     "3D Object": Object3DDialog,
+    "Bézier Surface": BezierSurfaceDialog,
 }
 
 class CreateObjectDialog(QDialog):
