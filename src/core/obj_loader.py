@@ -67,8 +67,53 @@ class ObjLoader:
         return vertices, edges
 
     @staticmethod
+    def load_bezier_surface(path: str) -> list[Coordinate]:
+        with open(path, "r", encoding="utf-8") as file:
+            return ObjLoader.parse_bezier_surface(file.read())
+
+    @staticmethod
+    def parse_bezier_surface(text: str) -> list[Coordinate]:
+        patches: list[list[Coordinate]] = []
+        current: list[Coordinate] = []
+        has_delimiters = False
+
+        def finish_patch(line_number: int) -> None:
+            nonlocal current
+            if not current:
+                return
+            if len(current) != 16:
+                raise ValueError(f"line {line_number}: each Bézier patch must have exactly 16 vertices")
+            patches.append(current)
+            current = []
+
+        for number, line in enumerate(text.splitlines(), start=1):
+            tokens = line.split("#", 1)[0].split()
+            if not tokens:
+                continue
+            keyword, args = tokens[0], tokens[1:]
+            if keyword in ("o", "g"):
+                has_delimiters = True
+                finish_patch(number)
+                continue
+            if keyword != "v":
+                continue
+            if len(args) < 3:
+                raise ValueError(f"line {number}: a vertex needs x, y and z")
+            try:
+                current.append(Coordinate(*(float(value) for value in args[:3])))
+            except ValueError:
+                raise ValueError(f"line {number}: invalid vertex coordinates") from None
+            if not has_delimiters and len(current) == 16:
+                patches.append(current)
+                current = []
+
+        finish_patch(number if text else 1)
+        if not patches:
+            raise ValueError("the file must define at least one Bézier patch with 16 vertices")
+        return [point for patch in patches for point in patch]
+
+    @staticmethod
     def __resolve(token: str, vertex_count: int) -> int:
-        """Converts an .obj index (1-based or negative) into a 0-based index."""
         index = int(token.split("/", 1)[0])
 
         if index > 0:
