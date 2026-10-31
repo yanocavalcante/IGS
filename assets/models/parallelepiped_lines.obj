@@ -1,0 +1,17 @@
+# Parallelepiped wireframe, 120 x 60 x 200, edges given as "l" polylines.
+# Requirements: load a wireframe .obj parallelepiped and view it in perspective.
+o parallelepiped_lines
+v -60 -30 -100
+v  60 -30 -100
+v  60  30 -100
+v -60  30 -100
+v -60 -30  100
+v  60 -30  100
+v  60  30  100
+v -60  30  100
+l 1 2 3 4 1
+l 5 6 7 8 5
+l 1 5
+l 2 6
+l 3 7
+l 4 8

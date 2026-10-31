@@ -61,11 +61,13 @@ class TransformObjectDialog(QDialog):
 
         self.dx_input = QLineEdit()
         self.dy_input = QLineEdit()
+        self.dz_input = QLineEdit("0")
         self.dx_input.setPlaceholderText("e.g. 20")
         self.dy_input.setPlaceholderText("e.g. -10")
 
         layout.addRow("DX:", self.dx_input)
         layout.addRow("DY:", self.dy_input)
+        layout.addRow("DZ:", self.dz_input)
 
         return widget
 
@@ -76,6 +78,10 @@ class TransformObjectDialog(QDialog):
         self.angle_input = QLineEdit()
         self.angle_input.setPlaceholderText("e.g. 45°")
         layout.addRow("Angle:", self.angle_input)
+
+        self.axis_selector = QComboBox()
+        self.axis_selector.addItems(["Z", "X", "Y"])
+        layout.addRow("Axis:", self.axis_selector)
 
         self.object_center_radio = QRadioButton("Object Center")
         self.world_center_radio = QRadioButton("World Center")
@@ -97,17 +103,21 @@ class TransformObjectDialog(QDialog):
         self.arbitrary_x_input.setPlaceholderText("e.g. 10")
         self.arbitrary_y_input = QLineEdit()
         self.arbitrary_y_input.setPlaceholderText("e.g. 20")
+        self.arbitrary_z_input = QLineEdit("0")
 
         layout.addRow("X:", self.arbitrary_x_input)
         layout.addRow("Y:", self.arbitrary_y_input)
+        layout.addRow("Z:", self.arbitrary_z_input)
 
         self.arbitrary_x_input.setEnabled(False)
         self.arbitrary_y_input.setEnabled(False)
+        self.arbitrary_z_input.setEnabled(False)
 
         self.arbitrary_point_radio.toggled.connect(
             lambda checked: (
                 self.arbitrary_x_input.setEnabled(checked),
                 self.arbitrary_y_input.setEnabled(checked),
+                self.arbitrary_z_input.setEnabled(checked),
             )
         )
 
@@ -119,11 +129,13 @@ class TransformObjectDialog(QDialog):
 
         self.sx_input = QLineEdit()
         self.sy_input = QLineEdit()
+        self.sz_input = QLineEdit("1")
         self.sx_input.setPlaceholderText("e.g. 2.0")
         self.sy_input.setPlaceholderText("e.g. 1.5")
 
         layout.addRow("SX:", self.sx_input)
         layout.addRow("SY:", self.sy_input)
+        layout.addRow("SZ:", self.sz_input)
 
         return widget
 
@@ -143,6 +155,7 @@ class TransformObjectDialog(QDialog):
                     "operation": "translation",
                     "dx": float(self.dx_input.text()),
                     "dy": float(self.dy_input.text()),
+                    "dz": float(self.dz_input.text()),
                 }
 
             elif operation == "Rotation":
@@ -152,13 +165,15 @@ class TransformObjectDialog(QDialog):
                     center = "world"
                 else:
                     center = (float(self.arbitrary_x_input.text()),
-                              float(self.arbitrary_y_input.text())
+                              float(self.arbitrary_y_input.text()),
+                              float(self.arbitrary_z_input.text()),
                             )
                 self.__result = {
                     "object": self.__current_object,
                     "operation": "rotation",
                     "angle": float(self.angle_input.text()),
-                    "center": center
+                    "center": center,
+                    "axis": self.axis_selector.currentText().lower(),
                 }
 
             elif operation == "Scaling":
@@ -167,6 +182,7 @@ class TransformObjectDialog(QDialog):
                     "operation": "scaling",
                     "sx": float(self.sx_input.text()),
                     "sy": float(self.sy_input.text()),
+                    "sz": float(self.sz_input.text()),
                 }
 
             super().accept()

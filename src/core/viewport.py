@@ -48,7 +48,7 @@ class Viewport:
         xvp = (self.xvpmin + (coord.x - window.norm_xwmin) / (window.norm_xwmax - window.norm_xwmin) * self.width)
         yvp = (self.yvpmin + (1 - (coord.y - window.norm_ywmin) / (window.norm_ywmax - window.norm_ywmin)) * self.height)
 
-        return Coordinate(xvp, yvp)
+        return Coordinate(xvp, yvp, coord.z)
 
     def transform_all(self, coords: list[Coordinate], window: Window) -> list[Coordinate]:
         return [self.transform(c, window) for c in coords]
