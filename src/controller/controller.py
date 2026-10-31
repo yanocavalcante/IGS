@@ -14,6 +14,7 @@ from models.wireframe import Wireframe
 from models.bezier_curve import BezierCurve
 from models.bspline_curve import BSplineCurve
 from models.object_3d import Object3D
+from models.bezier_surface import BezierSurface
 from view.interface import SGIInterface
 
 
@@ -24,6 +25,7 @@ _TYPE_MAP: dict[str, tuple[type[GraphicObject], ObjectType]] = {
     "Curve": (BezierCurve, ObjectType.CURVE),
     "B-Spline": (BSplineCurve, ObjectType.BSPLINE),
     "3D Object": (Object3D, ObjectType.OBJECT_3D),
+    "Bézier Surface": (BezierSurface, ObjectType.BEZIER_SURFACE),
 }
 
 
@@ -49,6 +51,10 @@ class Controller:
         """[IAGen] Generated with the help of an LLM (see AIGen.md)."""
         coords, edges = ObjLoader.load(path)
         self.add_object({"Name": name, "Type": "3D Object", "Coords": coords, "Edges": edges})
+
+    def load_bezier_surface(self, path: str, name: str) -> None:
+        coords = ObjLoader.load_bezier_surface(path)
+        self.add_object({"Name": name, "Type": "Bézier Surface", "Coords": coords})
 
     def remove_object(self, obj_id: int) -> None:
         self.display_file.remove(obj_id)
@@ -108,7 +114,7 @@ class Controller:
         drawable_objects = []
 
         for obj in self.display_file.objects:
-            if not isinstance(obj, Object3D):
+            if not isinstance(obj, (Object3D, BezierSurface)):
                 continue
 
             obj.visible_edges = []
@@ -122,12 +128,24 @@ class Controller:
 
         return drawable_objects
 
-    def __project_edges(self, obj: Object3D) -> list[list[Coordinate]]:
+    def __project_edges(self, obj: Object3D | BezierSurface) -> list[list[Coordinate]]:
         """
         Projects every edge of the object onto the projection plane (UV).
 
         [IAGen] Method generated with the help of an LLM (see AIGen.md).
         """
+        if isinstance(obj, BezierSurface):
+            world_edges = obj.wireframe_edges()
+            if self.window.projection is ProjectionType.PERSPECTIVE:
+                return [edge for edge in (
+                    Projection.perspective_edge(
+                        Projection.view_space(start, self.window),
+                        Projection.view_space(end, self.window), self.window,
+                    ) for start, end in world_edges
+                ) if edge]
+            return [[Projection.parallel(start, self.window), Projection.parallel(end, self.window)]
+                    for start, end in world_edges]
+
         if self.window.projection is ProjectionType.PERSPECTIVE:
             view = [Projection.view_space(coord, self.window) for coord in obj.coords]
             edges = (Projection.perspective_edge(view[start], view[end], self.window)

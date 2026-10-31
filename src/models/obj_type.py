@@ -8,3 +8,4 @@ class ObjectType(Enum):
     CURVE = 4
     BSPLINE = 5
     OBJECT_3D = 6
+    BEZIER_SURFACE = 7
