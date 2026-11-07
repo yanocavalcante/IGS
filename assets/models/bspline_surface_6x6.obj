@@ -1,0 +1,41 @@
+# sgi_bspline_matrix 6 6
+# 6x6 control matrix for a uniform bicubic B-Spline surface.
+# Vertices are in row-major order: each six consecutive vertices form one row.
+# Use this mesh as a manual validation example for the B-Spline Surface object.
+o bspline_surface_6x6
+v -150 -125 -20
+v -150 -75 -5
+v -150 -25 5
+v -150 25 5
+v -150 75 -5
+v -150 125 -20
+v -90 -125 -5
+v -90 -75 25
+v -90 -25 45
+v -90 25 45
+v -90 75 25
+v -90 125 -5
+v -30 -125 5
+v -30 -75 45
+v -30 -25 80
+v -30 25 80
+v -30 75 45
+v -30 125 5
+v 30 -125 5
+v 30 -75 45
+v 30 -25 80
+v 30 25 80
+v 30 75 45
+v 30 125 5
+v 90 -125 -5
+v 90 -75 25
+v 90 -25 45
+v 90 25 45
+v 90 75 25
+v 90 125 -5
+v 150 -125 -20
+v 150 -75 -5
+v 150 -25 5
+v 150 25 5
+v 150 75 -5
+v 150 125 -20

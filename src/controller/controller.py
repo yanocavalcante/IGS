@@ -15,6 +15,7 @@ from models.bezier_curve import BezierCurve
 from models.bspline_curve import BSplineCurve
 from models.object_3d import Object3D
 from models.bezier_surface import BezierSurface
+from models.bspline_surface import BSplineSurface
 from view.interface import SGIInterface
 
 
@@ -26,6 +27,7 @@ _TYPE_MAP: dict[str, tuple[type[GraphicObject], ObjectType]] = {
     "B-Spline": (BSplineCurve, ObjectType.BSPLINE),
     "3D Object": (Object3D, ObjectType.OBJECT_3D),
     "Bézier Surface": (BezierSurface, ObjectType.BEZIER_SURFACE),
+    "B-Spline Surface": (BSplineSurface, ObjectType.BSPLINE_SURFACE),
 }
 
 
@@ -44,7 +46,13 @@ class Controller:
     def add_object(self, obj_dict: dict) -> None:
         obj_type_name = obj_dict["Type"]
         obj_class, obj_type = _TYPE_MAP[obj_type_name]
-        self.display_file.add(obj_class, obj_type, obj_dict["Name"], obj_dict["Coords"],**({"edges": obj_dict["Edges"]} if "Edges" in obj_dict else {}))
+        extra = {}
+        if "Edges" in obj_dict:
+            extra["edges"] = obj_dict["Edges"]
+        if "Rows" in obj_dict:
+            extra["rows"] = obj_dict["Rows"]
+            extra["cols"] = obj_dict["Cols"]
+        self.display_file.add(obj_class, obj_type, obj_dict["Name"], obj_dict["Coords"], **extra)
         self.sgi.refresh_canvas()
 
     def load_obj(self, path: str, name: str) -> None:
@@ -55,6 +63,17 @@ class Controller:
     def load_bezier_surface(self, path: str, name: str) -> None:
         coords = ObjLoader.load_bezier_surface(path)
         self.add_object({"Name": name, "Type": "Bézier Surface", "Coords": coords})
+
+    def load_surface(self, path: str, name: str) -> None:
+        """Imports either a Bézier surface or an SGI B-Spline surface OBJ."""
+        if ObjLoader.is_bspline_surface(path):
+            coords, rows, cols = ObjLoader.load_bspline_surface(path)
+            self.add_object({
+                "Name": name, "Type": "B-Spline Surface", "Coords": coords,
+                "Rows": rows, "Cols": cols,
+            })
+            return
+        self.load_bezier_surface(path, name)
 
     def remove_object(self, obj_id: int) -> None:
         self.display_file.remove(obj_id)
@@ -114,7 +133,7 @@ class Controller:
         drawable_objects = []
 
         for obj in self.display_file.objects:
-            if not isinstance(obj, (Object3D, BezierSurface)):
+            if not isinstance(obj, (Object3D, BezierSurface, BSplineSurface)):
                 continue
 
             obj.visible_edges = []
@@ -128,13 +147,13 @@ class Controller:
 
         return drawable_objects
 
-    def __project_edges(self, obj: Object3D | BezierSurface) -> list[list[Coordinate]]:
+    def __project_edges(self, obj: Object3D | BezierSurface | BSplineSurface) -> list[list[Coordinate]]:
         """
         Projects every edge of the object onto the projection plane (UV).
 
         [IAGen] Method generated with the help of an LLM (see AIGen.md).
         """
-        if isinstance(obj, BezierSurface):
+        if isinstance(obj, (BezierSurface, BSplineSurface)):
             world_edges = obj.wireframe_edges()
             if self.window.projection is ProjectionType.PERSPECTIVE:
                 return [edge for edge in (

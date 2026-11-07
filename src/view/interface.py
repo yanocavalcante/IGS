@@ -91,7 +91,7 @@ class SGIInterface(QMainWindow):
         self.__add_button(objects_layout, "Create", self.__create_object, 0, 0)
         self.__add_button(objects_layout, "Transform", self.__transform, 0, 1)
         self.__add_button(objects_layout, "Load .obj", self.__load_obj, 1, 0)
-        self.__add_button(objects_layout, "Load surface .obj", self.__load_bezier_surface, 1, 1)
+        self.__add_button(objects_layout, "Load surface .obj", self.__load_surface, 1, 1)
 
         menu_layout.addLayout(objects_layout)
 
@@ -190,16 +190,16 @@ class SGIInterface(QMainWindow):
         except (OSError, ValueError) as error:
             QMessageBox.warning(self, "IGS", f"Could not load '{Path(path).name}':\n{error}")
 
-    def __load_bezier_surface(self) -> None:
+    def __load_surface(self) -> None:
         models_dir = Path(__file__).resolve().parents[2] / "assets" / "models"
         path, _ = QFileDialog.getOpenFileName(
-            self, "Load Bézier surface control meshes", str(models_dir) if models_dir.is_dir() else "",
+            self, "Load Bézier or B-Spline surface control mesh", str(models_dir) if models_dir.is_dir() else "",
             "Wavefront OBJ (*.obj)")
         if not path:
             return
 
         try:
-            self.__controller.load_bezier_surface(path, Path(path).stem)
+            self.__controller.load_surface(path, Path(path).stem)
         except (OSError, ValueError) as error:
             QMessageBox.warning(self, "IGS", f"Could not load '{Path(path).name}':\n{error}")
 
