@@ -15,6 +15,7 @@ from view.dialogs.curve_dialog import CurveDialog
 from view.dialogs.bspline_dialog import BSplineDialog
 from view.dialogs.object_3d_dialog import Object3DDialog
 from view.dialogs.bezier_surface_dialog import BezierSurfaceDialog
+from view.dialogs.bspline_surface_dialog import BSplineSurfaceDialog
 
 _COORD_DIALOGS = {
     "Point": PointDialog,
@@ -24,6 +25,7 @@ _COORD_DIALOGS = {
     "B-Spline": BSplineDialog,
     "3D Object": Object3DDialog,
     "Bézier Surface": BezierSurfaceDialog,
+    "B-Spline Surface": BSplineSurfaceDialog,
 }
 
 class CreateObjectDialog(QDialog):
@@ -77,4 +79,6 @@ class CreateObjectDialog(QDialog):
         }
         if obj_type == "3D Object":
             result["Edges"] = coord_dialog.get_edges()
+        elif obj_type == "B-Spline Surface":
+            result["Rows"], result["Cols"] = coord_dialog.get_dimensions()
         return result
