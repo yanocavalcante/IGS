@@ -72,6 +72,61 @@ class ObjLoader:
             return ObjLoader.parse_bezier_surface(file.read())
 
     @staticmethod
+    def load_bspline_surface(path: str) -> tuple[list[Coordinate], int, int]:
+        with open(path, "r", encoding="utf-8") as file:
+            return ObjLoader.parse_bspline_surface(file.read())
+
+    @staticmethod
+    def is_bspline_surface(path: str) -> bool:
+        with open(path, "r", encoding="utf-8") as file:
+            return any(line.strip().lower().startswith("# sgi_bspline_matrix") for line in file)
+
+    @staticmethod
+    def parse_bspline_surface(text: str) -> tuple[list[Coordinate], int, int]:
+        """Reads an SGI B-Spline control matrix from a Wavefront OBJ file.
+
+        The first metadata comment must be ``# sgi_bspline_matrix R C``. OBJ
+        vertices then follow in row-major order, allowing non-square meshes to
+        retain their dimensions during import.
+        """
+        dimensions: tuple[int, int] | None = None
+        vertices: list[Coordinate] = []
+
+        for number, line in enumerate(text.splitlines(), start=1):
+            stripped = line.strip()
+            if stripped.lower().startswith("# sgi_bspline_matrix"):
+                fields = stripped.split()
+                if len(fields) != 4:
+                    raise ValueError(f"line {number}: expected '# sgi_bspline_matrix rows cols'")
+                try:
+                    rows, cols = int(fields[2]), int(fields[3])
+                except ValueError:
+                    raise ValueError(f"line {number}: rows and columns must be integers") from None
+                if dimensions is not None:
+                    raise ValueError(f"line {number}: B-Spline matrix dimensions were already declared")
+                if not 4 <= rows <= 20 or not 4 <= cols <= 20:
+                    raise ValueError(f"line {number}: matrix dimensions must be between 4 and 20")
+                dimensions = rows, cols
+                continue
+
+            tokens = line.split("#", 1)[0].split()
+            if not tokens or tokens[0] != "v":
+                continue
+            if len(tokens) < 4:
+                raise ValueError(f"line {number}: a vertex needs x, y and z")
+            try:
+                vertices.append(Coordinate(*(float(value) for value in tokens[1:4])))
+            except ValueError:
+                raise ValueError(f"line {number}: invalid vertex coordinates") from None
+
+        if dimensions is None:
+            raise ValueError("missing '# sgi_bspline_matrix rows cols' metadata")
+        rows, cols = dimensions
+        if len(vertices) != rows * cols:
+            raise ValueError(f"expected {rows * cols} vertices for a {rows}x{cols} control matrix, found {len(vertices)}")
+        return vertices, rows, cols
+
+    @staticmethod
     def parse_bezier_surface(text: str) -> list[Coordinate]:
         patches: list[list[Coordinate]] = []
         current: list[Coordinate] = []
